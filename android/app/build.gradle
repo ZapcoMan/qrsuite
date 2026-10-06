@@ -1,4 +1,4 @@
-﻿// QRSuite 绉诲姩绔?鈥斺€?鍘熺敓 CameraX + ML Kit 鏉＄爜鎵弿
+// QRSuite 移动端 —— 原生 CameraX + ML Kit 条码扫描
 plugins {
     id 'com.android.application'
 }
@@ -6,11 +6,14 @@ plugins {
 def localProps = new Properties()
 def lp = rootProject.file('local.properties')
 if (lp.exists()) { localProps.load(new FileInputStream(lp)) }
-def sdkDir = localProps.getProperty('sdk.dir') ?: System.getenv('ANDROID_SDK_ROOT') ?: 'E:/瀛︿範/Android/sdk'
+def sdkDir = localProps.getProperty('sdk.dir') ?: System.getenv('ANDROID_SDK_ROOT') ?: 'E:/学习/Android/sdk'
 
-// 鍙戝竷绛惧悕锛氫紭鍏堢敤鐜鍙橀噺锛圕I 浠?Secrets 娉ㄥ叆锛夛紝鍚﹀垯璇讳粨搴撳鐨?signing.properties銆?// 涓よ€呴兘娌℃湁灏遍€€鍥?debug 绛惧悕骞舵槑纭鍛婏紝閬垮厤璇彂 debug 绛惧悕鍖呫€?def releaseSigning = null
+// 发布签名：优先用环境变量（CI 从 Secrets 注入），否则读仓库外的 signing.properties。
+// 两者都没有就退回 debug 签名并明确警告，避免误发 debug 签名包。
+def releaseSigning = null
 if (System.getenv('QRSUITE_KEYSTORE')) {
-    // CI 璺緞锛欸itHub Actions 瑙ｇ爜 keystore 鍚庢妸璺緞涓庡彛浠ゆ斁杩涚幆澧冨彉閲?    releaseSigning = [
+    // CI 路径：GitHub Actions 解码 keystore 后把路径与口令放进环境变量
+    releaseSigning = [
             storeFile    : System.getenv('QRSUITE_KEYSTORE'),
             storePassword: System.getenv('QRSUITE_STORE_PASSWORD'),
             keyAlias     : System.getenv('QRSUITE_KEY_ALIAS'),
@@ -19,7 +22,7 @@ if (System.getenv('QRSUITE_KEYSTORE')) {
 } else {
     def signingCandidates = [
             System.getenv('QRSUITE_SIGNING_PROPERTIES'),
-            'E:/瀛︿範/qcode/06-鏋勫缓浜х墿/android/signing.properties',
+            'E:/学习/qcode/06-构建产物/android/signing.properties',
             rootProject.file('signing.properties').absolutePath,
     ]
     for (def path : signingCandidates) {
@@ -36,7 +39,7 @@ if (System.getenv('QRSUITE_KEYSTORE')) {
     }
 }
 
-def signVal = { cfg, key ->
+def pickSigning = { cfg, key ->
     if (cfg instanceof Map) return cfg[key]
     return cfg.getProperty(key)
 }
@@ -48,10 +51,10 @@ android {
     if (releaseSigning != null) {
         signingConfigs {
             release {
-                storeFile new File(signVal(releaseSigning, 'storeFile'))
-                storePassword signVal(releaseSigning, 'storePassword')
-                keyAlias signVal(releaseSigning, 'keyAlias')
-                keyPassword signVal(releaseSigning, 'keyPassword')
+                storeFile new File(pickSigning(releaseSigning, 'storeFile'))
+                storePassword pickSigning(releaseSigning, 'storePassword')
+                keyAlias pickSigning(releaseSigning, 'keyAlias')
+                keyPassword pickSigning(releaseSigning, 'keyPassword')
             }
         }
     }
@@ -64,12 +67,13 @@ android {
         versionName '2.0.4'
         resourceConfigurations += ['zh', 'en']
 
-        // 鍙墦 64 浣?ARM锛堢幇浠ｅ畨鍗撴満锛夛紱x86/armeabi 浠呬负妯℃嫙鍣ㄤ笌鑰佽澶囨墍闇€锛屽幓鎺夊彲鐪佽繎鍗婁綋绉?        ndk {
+        // 只打 64 位 ARM（现代安卓机）；x86/armeabi 仅为模拟器与老设备所需，去掉可省近半体积
+        ndk {
             abiFilters 'arm64-v8a'
         }
     }
 
-    // 鍙繚鐣欓渶瑕佺殑 ABI/璧勬簮锛孉PK 鏇村皬
+    // 只保留需要的 ABI/资源，APK 更小
     packaging {
         resources {
             excludes += ['META-INF/*.kotlin_module', 'META-INF/DEPENDENCIES', 'META-INF/LICENSE*', 'META-INF/NOTICE*', 'DebugProbesKt.bin']
@@ -84,7 +88,7 @@ android {
             if (releaseSigning != null) {
                 signingConfig signingConfigs.release
             } else {
-                logger.warn('[QRSuite] 鏈壘鍒?signing.properties锛屽洖閫€涓?debug 绛惧悕锛堜笉閫傚悎瀵瑰鍙戝竷锛?)
+                logger.warn('[QRSuite] 未找到 signing.properties，回退为 debug 签名（不适合对外发布）')
                 signingConfig signingConfigs.debug
             }
         }
@@ -106,10 +110,12 @@ dependencies {
     implementation 'com.google.android.material:material:1.12.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.2.0'
 
-    // 鐩告満锛歝amera2 涔嬩笂鐨勭ǔ瀹氬皝瑁?    implementation 'androidx.camera:camera-core:1.4.1'
+    // 相机：camera2 之上的稳定封装
+    implementation 'androidx.camera:camera-core:1.4.1'
     implementation 'androidx.camera:camera-camera2:1.4.1'
     implementation 'androidx.camera:camera-lifecycle:1.4.1'
     implementation 'androidx.camera:camera-view:1.4.1'
 
-    // 鏉＄爜璇嗗埆锛歜undled 鐗堟ā鍨嬫墦杩?APK锛屽畬鍏ㄧ绾垮彲鐢?    implementation 'com.google.mlkit:barcode-scanning:17.3.0'
+    // 条码识别：bundled 版模型打进 APK，完全离线可用
+    implementation 'com.google.mlkit:barcode-scanning:17.3.0'
 }
