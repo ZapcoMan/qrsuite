@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg">
+
+    <androidx.camera.view.PreviewView
+        android:id="@+id/preview"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:implementationMode="performance"
+        app:scaleType="fillCenter" />
+
+    <!-- 取景遮罩：四角高亮 + 外部压暗，由 ScanOverlayView 自绘 -->
+    <com.qrsuite.scanner.ScanOverlayView
+        android:id="@+id/overlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <!-- 顶部品牌条 -->
+    <LinearLayout
+        android:id="@+id/topBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top"
+        android:background="@drawable/bg_top_bar"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="20dp"
+        android:paddingTop="14dp"
+        android:paddingEnd="20dp"
+        android:paddingBottom="14dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="sans-serif-medium"
+            android:letterSpacing="0.02"
+            android:text="@string/app_name"
+            android:textColor="@color/on_surface"
+            android:textSize="20sp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:background="@drawable/bg_version_chip"
+            android:paddingStart="8dp"
+            android:paddingTop="2dp"
+            android:paddingEnd="8dp"
+            android:paddingBottom="2dp"
+            android:text="原生"
+            android:textColor="@color/accent"
+            android:textSize="11sp" />
+
+        <Space
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_weight="1" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnTorch"
+            style="@style/Widget.QRSuite.IconButton"
+            android:contentDescription="@string/torch"
+            app:icon="@drawable/ic_torch_off" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnHistory"
+            style="@style/Widget.QRSuite.IconButton"
+            android:layout_marginStart="4dp"
+            android:contentDescription="@string/history"
+            app:icon="@drawable/ic_history" />
+    </LinearLayout>
+
+    <!-- 取景框下方提示 -->
+    <TextView
+        android:id="@+id/hint"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal|bottom"
+        android:layout_marginBottom="150dp"
+        android:background="@drawable/bg_hint_chip"
+        android:letterSpacing="0.03"
+        android:paddingStart="16dp"
+        android:paddingTop="8dp"
+        android:paddingEnd="16dp"
+        android:paddingBottom="8dp"
+        android:text="@string/scan_hint"
+        android:textColor="#F2F5FA"
+        android:textSize="13sp" />
+
+    <!-- 底部操作条 -->
+    <LinearLayout
+        android:id="@+id/bottomBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:background="@drawable/bg_bottom_bar"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:paddingTop="18dp"
+        android:paddingBottom="26dp">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnPick"
+            style="@style/Widget.Material3.Button.TonalButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:paddingStart="26dp"
+            android:paddingEnd="26dp"
+            android:text="@string/pick_image"
+            app:cornerRadius="26dp"
+            app:icon="@drawable/ic_gallery"
+            app:iconSize="20dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:alpha="0.55"
+            android:text="全程本机解码 · 无网络权限 · 图片不外传"
+            android:textColor="@color/on_surface_dim"
+            android:textSize="11sp" />
+    </LinearLayout>
+
+    <!-- 无相机权限时的引导层 -->
+    <LinearLayout
+        android:id="@+id/permPanel"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/bg"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="32dp"
+        android:visibility="gone">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="📷"
+            android:textSize="52sp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="18dp"
+            android:gravity="center"
+            android:text="@string/permission_needed"
+            android:textColor="@color/on_surface"
+            android:textSize="19sp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:alpha="0.7"
+            android:gravity="center"
+            android:text="@string/permission_rationale"
+            android:textColor="@color/on_surface_dim"
+            android:textSize="13sp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnGrant"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="26dp"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:paddingStart="28dp"
+            android:paddingEnd="28dp"
+            android:text="@string/grant"
+            app:cornerRadius="26dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnPickFromPerm"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:text="@string/pick_image" />
+    </LinearLayout>
+
+</FrameLayout>

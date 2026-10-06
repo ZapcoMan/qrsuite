@@ -1,0 +1,4 @@
+// 顶层构建脚本：只声明插件版本，模块在 app/build.gradle 应用
+plugins {
+    id 'com.android.application' version '8.7.3' apply false
+}

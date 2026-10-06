@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="utf-8"><title>QRSuite v2 介绍图（方版）</title>
+<link rel="stylesheet" href="intro.css">
+<style>
+html,body{width:1080px;height:1080px}
+.card{width:1080px;height:1080px;padding:52px 50px;gap:20px;justify-content:space-between}
+h1{font-size:40px} .sub{font-size:18px} .byline{font-size:13px}
+.logo{width:54px;height:54px;border-radius:15px;font-size:28px}
+.metrics{gap:13px} .m{padding:16px 14px} .m .v{font-size:31px} .m .k{font-size:12.5px} .m .d{font-size:12.5px}
+h2{font-size:14px}
+.grid{grid-template-columns:1fr 1fr;gap:12px}
+.f{padding:13px 15px;gap:12px} .f .i{font-size:19px} .f b{font-size:15px} .f p{font-size:13px}
+.arch{gap:13px} .a{padding:14px 16px} .a h3{font-size:14px} .t{font-size:12px}
+.compat{font-size:13.5px;padding:13px 16px}
+.foot{font-size:13px;padding-top:13px;margin-top:0}
+</style>
+</head><body>
+<div class="card">
+
+  <div class="brand">
+    <div class="logo">🔳</div>
+    <div>
+      <h1>QR<span>Suite</span> <span style="font-size:18px;color:#93a5c2">v2</span></h1>
+      <div class="sub">多引擎 + 网页 + 可部署的二维码识别工具</div>
+    </div>
+    <div style="margin-left:auto"><div class="pill">v2.0 · 2026</div></div>
+  </div>
+
+  <div class="metrics">
+    <div class="m blue"><div class="k">引擎</div><div class="v">1→6</div><div class="d">并联</div></div>
+    <div class="m green"><div class="k">码制</div><div class="v">10+</div><div class="d">QR/DM/Aztec…</div></div>
+    <div class="m warm"><div class="k">速度</div><div class="v">10.5×</div><div class="d">3.40→0.32s</div></div>
+    <div class="m pink"><div class="k">CPU</div><div class="v">15×↓</div><div class="d">6.78→0.45s</div></div>
+  </div>
+
+  <div>
+    <h2>新增能力</h2>
+    <div class="grid">
+      <div class="f"><div class="i">🧩</div><div><b>多引擎 + 交叉验证</b><p>zxing-cpp / OpenCV / zbar / WeChat / 原版</p></div></div>
+      <div class="f"><div class="i">⚡</div><div><b>级联 + 早退</b><p>命中即停，阶段 234→21</p></div></div>
+      <div class="f"><div class="i">🖱️</div><div><b>四种输入</b><p>参数 / 拖拽 / 粘贴 / URL</p></div></div>
+      <div class="f"><div class="i">🌐</div><div><b>Pages 静态站</b><p>零依赖、可离线、无需后端</p></div></div>
+      <div class="f"><div class="i">🧵</div><div><b>Worker 后台解码</b><p>多图并发不卡界面，44ms/张</p></div></div>
+      <div class="f"><div class="i">📦</div><div><b>一个包统一入口</b><p>python -m qrsuite</p></div></div>
+    </div>
+  </div>
+
+  <div class="arch">
+    <div class="a">
+      <h3>🌐 docs/ · 浏览器端</h3>
+      <div class="tags"><span class="t">jsQR</span><span class="t">ZXing-js</span><span class="t g">零 CDN</span></div>
+    </div>
+    <div class="a">
+      <h3>🐍 qrsuite/ · Python 端</h3>
+      <div class="tags"><span class="t">zxing-cpp</span><span class="t">OpenCV</span><span class="t g">原版可挂载</span></div>
+    </div>
+  </div>
+
+  <div class="compat">♻️ 你的原版 <b>QRCodeScanner.exe</b> 仍可作为 <b>original</b> 引擎挂载，二进制与版权归你。</div>
+
+  <div class="foot">
+    <div>精度持平 12/13</div>
+    <div>MIT <span class="dot">·</span> 含手册与基准测试</div>
+  </div>
+
+</div>
+</body></html>

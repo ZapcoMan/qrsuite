@@ -1,0 +1,15 @@
+# 统一换行，避免跨平台 diff 噪音
+* text=auto
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.sh  text eol=lf
+*.py  text eol=lf
+*.yml text eol=lf
+*.md  text eol=lf
+
+# 第三方压缩产物按二进制处理，不要改行尾
+docs/vendor/*.js -text
+*.png binary
+*.jpg binary
+*.webp binary
+*.wasm binary

@@ -1,0 +1,8 @@
+# QRSuite v2 依赖（本地 Python 版）
+# 网页版（docs/）不需要任何依赖，浏览器直接跑。
+
+zxing-cpp>=2.2.0
+opencv-contrib-python-headless>=4.8.0
+pyzbar>=0.1.9
+Pillow>=10.0.0
+numpy>=1.26.0

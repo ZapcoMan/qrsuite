@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">QRSuite</string>
+    <string name="scan_hint">将二维码/条码对准取景框</string>
+    <string name="permission_needed">需要相机权限才能扫码</string>
+    <string name="permission_rationale">相机画面只在本机实时分析，不会录制、不会上传。</string>
+    <string name="grant">授权相机</string>
+    <string name="open_settings">去系统设置开启</string>
+    <string name="pick_image">相册选图</string>
+    <string name="torch">补光灯</string>
+    <string name="history">历史</string>
+    <string name="result_title">识别结果</string>
+    <string name="copy">复制</string>
+    <string name="share">分享</string>
+    <string name="open">打开</string>
+    <string name="search">搜索</string>
+    <string name="continue_scan">继续扫描</string>
+    <string name="copied">已复制</string>
+    <string name="no_code_found">没识别到条码，换张图试试</string>
+    <string name="stylized_code_hint">没识别到条码。若这是抖音主页码或微信赞赏码，它的圆点圆环是私有样式，通用解码器读不出来，请用对应 App 扫一扫。</string>
+    <string name="history_empty">还没有记录</string>
+    <string name="clear_history">清空历史</string>
+    <string name="cleared">历史已清空</string>
+    <string name="detecting">识别中…</string>
+    <string name="secondary_actions">其他操作</string>
+</resources>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- QRSuite 深色基调：相机预览在深色下更沉浸，也更省电（OLED） -->
+    <color name="brand">#7C5CFF</color>
+    <color name="brand_bright">#9E86FF</color>
+    <color name="brand_deep">#5B3FD6</color>
+    <color name="accent">#2AE6A8</color>
+    <color name="warn">#FF6B6B</color>
+
+    <color name="bg">#0B0E16</color>
+    <color name="surface">#141A26</color>
+    <color name="surface_high">#1D2534</color>
+    <color name="on_surface">#E9EDF5</color>
+    <color name="on_surface_dim">#98A2B6</color>
+    <color name="outline">#2A3446</color>
+    <color name="scrim">#99000000</color>
+</resources>

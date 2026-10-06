@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="utf-8"><title>QRSuite v2 · OpenGraph</title>
+<link rel="stylesheet" href="intro.css">
+<style>
+html,body{width:1200px;height:630px}
+.card{width:1200px;height:630px;padding:52px 58px;gap:22px;justify-content:center}
+h1{font-size:52px} .sub{font-size:21px} .byline{font-size:14.5px}
+.logo{width:64px;height:64px;font-size:32px}
+.metrics{gap:18px} .m .v{font-size:36px}
+.grid{grid-template-columns:repeat(3,1fr);gap:12px}
+.f{padding:13px 15px} .f .i{font-size:19px} .f b{font-size:14.5px} .f p{font-size:12.5px}
+.foot{padding-top:14px;margin-top:0}
+</style>
+</head><body>
+<div class="card">
+
+  <div class="brand">
+    <div class="logo">🔳</div>
+    <div>
+      <h1>QR<span>Suite</span> <span style="font-size:24px;color:#93a5c2">v2</span></h1>
+      <div class="sub">多引擎二维码 / 条码识别 · 命令行 + 本地网页 + 可部署静态站</div>
+    </div>
+    <div style="margin-left:auto"><div class="pill">v2.0 · 2026</div></div>
+  </div>
+
+  <div class="metrics">
+    <div class="m blue"><div class="k">解码引擎</div><div class="v">1 → 6</div><div class="d">zxing / OpenCV / zbar / WeChat…</div></div>
+    <div class="m warm"><div class="k">识别速度</div><div class="v">10.5×</div><div class="d">3.40s → 0.32s</div></div>
+    <div class="m pink"><div class="k">CPU 占用</div><div class="v">15×↓</div><div class="d">6.78s → 0.45s</div></div>
+  </div>
+
+  <div class="grid">
+    <div class="f"><div class="i">🧩</div><div><b>多引擎 + 交叉验证</b><p>≥2 引擎一致才判定，抑制误读</p></div></div>
+    <div class="f"><div class="i">⚡</div><div><b>级联 + 早退</b><p>命中即停，阶段数 234 → 21</p></div></div>
+    <div class="f"><div class="i">🌐</div><div><b>GitHub Pages 就绪</b><p>纯前端解码，零依赖零构建</p></div></div>
+  </div>
+
+  <div class="foot">
+    <div>QR / MicroQR / DataMatrix / Aztec / PDF417 / Code128·39·93 / EAN·UPC / ITF / Codabar</div>
+    <div>MIT</div>
+  </div>
+
+</div>
+</body></html>

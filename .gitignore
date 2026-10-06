@@ -1,0 +1,49 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+.pytest_cache/
+.coverage
+
+# 分析/测试产物
+tests/raw/
+*.json.tmp
+out*.json
+
+# 模型（体积大，如需内置可自行放开）
+qrsuite/wechat_models/
+
+# 编辑器 / 系统
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 构建产物（二进制不入库；需要分发请用 GitHub Releases 或网盘）
+build/
+dist/
+*.spec
+*.exe
+*.apk
+*.aab
+
+# Android / Gradle（android/ 子项目）
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties
+android/.idea/
+android/captures/
+*.iml
+.kotlin/
+
+# 签名与凭据：**绝不能入库**
+*.jks
+*.keystore
+signing.properties
+local.properties
+签名信息.txt

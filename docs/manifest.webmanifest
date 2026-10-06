@@ -1,0 +1,24 @@
+{
+  "name": "QRSuite · 多引擎二维码识别",
+  "short_name": "QRSuite",
+  "description": "浏览器内本地解码的二维码/条码识别：QR / MicroQR / DataMatrix / Aztec / PDF417 / 一维码。图片不上传，可离线。",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0e1320",
+  "theme_color": "#0e1320",
+  "lang": "zh-CN",
+  "categories": ["utilities", "productivity"],
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "file_handlers": [
+    {
+      "action": "./index.html",
+      "accept": { "image/*": [".png", ".jpg", ".jpeg", ".gif", ".bmp", ".webp"] }
+    }
+  ]
+}

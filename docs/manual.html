@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>QRSuite v2 使用手册</title>
+<style>
+:root{--bg:#0e1320;--card:#171f30;--line:#26314a;--fg:#e8eef7;--mut:#8ea0bd;--acc:#3ea6ff;--ok:#31c48d}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(1200px 600px at 50% -12%,#1c2942,#0e1320 62%);color:var(--fg);
+     font:15.5px/1.75 "Microsoft YaHei",system-ui,-apple-system,"Segoe UI",sans-serif}
+.wrap{max-width:920px;margin:0 auto;padding:32px 22px 90px;background:transparent}
+a{color:var(--acc)} a:hover{text-decoration:underline}
+h1{font-size:28px;margin:0 0 6px} h2{font-size:21px;margin:34px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+h3{font-size:17px;margin:24px 0 8px;color:#cfe4ff} h4{font-size:15px;margin:18px 0 6px;color:#bcd3f2}
+p,li{color:#dbe6f5} li{margin:4px 0}
+code{background:#0c1220;border:1px solid #1e2a40;border-radius:5px;padding:1px 6px;color:#9fd2ff;
+      font-family:Consolas,ui-monospace,monospace;font-size:13.5px}
+pre{background:#0b111d;border:1px solid var(--line);border-radius:12px;padding:14px 16px;overflow:auto}
+pre code{background:none;border:none;padding:0;color:#cfe9dc;font-size:13.5px;line-height:1.6}
+blockquote{margin:14px 0;padding:8px 14px;border-left:3px solid var(--acc);background:#131c2b;color:var(--mut);border-radius:0 8px 8px 0}
+table{border-collapse:collapse;width:100%;margin:12px 0;font-size:14px;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:7px 10px;text-align:left;vertical-align:top}
+th{background:#1a2437;color:#cfe4ff;white-space:nowrap}
+tr:nth-child(even) td{background:#141c2b}
+hr{border:none;border-top:1px solid var(--line);margin:28px 0}
+.top{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+.top a{font-size:13.5px}
+.badge{font-size:12px;color:var(--mut);border:1px solid var(--line);border-radius:999px;padding:2px 10px}
+</style>
+</head>
+<body><div class="wrap">
+<div class="top"><a href="./">← 返回识别页</a><span class="badge">QRSuite v2 使用手册</span></div>
+<h1 id="qrsuite-v2">QRSuite v2 使用手册</h1>
+<blockquote>
+<p>多引擎二维码 / 条码识别工具 · 命令行 + 本地网页 + 纯前端静态页
+版本 2.0 · 适用 Windows / macOS / Linux（Python 3.10+）</p>
+</blockquote>
+<hr />
+<h2 id="_1">目录</h2>
+<ul>
+<li><a href="#0-一分钟上手">0. 一分钟上手</a></li>
+<li><a href="#1-这是什么能识别什么">1. 这是什么，能识别什么</a></li>
+<li><a href="#2-安装与运行要求">2. 安装与运行要求</a></li>
+<li><a href="#3-网页版使用详解">3. 网页版使用详解</a></li>
+<li><a href="#4-命令行使用详解">4. 命令行使用详解</a></li>
+<li><a href="#5-windows-一键启动器">5. Windows 一键启动器</a></li>
+<li><a href="#6-可选增强引擎">6. 可选增强引擎</a></li>
+<li><a href="#7-识别不出来怎么办排查清单">7. 识别不出来怎么办（排查清单）</a></li>
+<li><a href="#8-常见问题-faq">8. 常见问题 FAQ</a></li>
+<li><a href="#9-部署与维护给维护者">9. 部署与维护（给维护者）</a></li>
+<li><a href="#10-附录">10. 附录</a></li>
+</ul>
+<hr />
+<h2 id="0">0. 一分钟上手</h2>
+<table>
+<thead>
+<tr>
+<th>你想干什么</th>
+<th>怎么做</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>拖张图片进去就出结果</strong></td>
+<td>双击 <code>run.bat</code> → 选 <code>1</code> → 浏览器打开后把图片拖进页面</td>
+</tr>
+<tr>
+<td><strong>不改任何东西，直接看</strong></td>
+<td>双击 <code>docs/index.html</code>（纯前端，无需 Python）</td>
+</tr>
+<tr>
+<td><strong>批量扫一个文件夹</strong></td>
+<td><code>python -m qrsuite D:\pics --mode fast</code></td>
+</tr>
+<tr>
+<td><strong>识别一个网络图片链接</strong></td>
+<td><code>python -m qrsuite "https://example.com/qr.png"</code></td>
+</tr>
+<tr>
+<td><strong>给同事用（网页）</strong></td>
+<td>把仓库 <code>docs/</code> 部署到 GitHub Pages，发链接即可</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="1">1. 这是什么，能识别什么</h2>
+<p>QRSuite 把「解码引擎」和「输入方式」拆开组合：<strong>同一套级联策略</strong>，既能在 Python 里跑（高精度），也能在浏览器里跑（零安装）。</p>
+<h3 id="_2">支持的码制</h3>
+<table>
+<thead>
+<tr>
+<th>类别</th>
+<th>格式</th>
+<th>浏览器版</th>
+<th>Python 版</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>二维码</td>
+<td>QR Code、Micro QR</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>二维码</td>
+<td>Data Matrix</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>二维码</td>
+<td>Aztec</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>二维码</td>
+<td>PDF417</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>一维码</td>
+<td>Code 128 / Code 39 / Code 93</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>一维码</td>
+<td>EAN-8/13、UPC-A/E</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>一维码</td>
+<td>ITF、Codabar、DX Film Edge</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+</tbody>
+</table>
+<h3 id="_3">四个解码引擎（并联，结果去重）</h3>
+<table>
+<thead>
+<tr>
+<th>引擎</th>
+<th>运行位置</th>
+<th>特点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>zxing-cpp</strong></td>
+<td>Python</td>
+<td>主力，码制最全、识别率最高</td>
+</tr>
+<tr>
+<td><strong>OpenCV QRCodeDetector</strong></td>
+<td>Python</td>
+<td>抗噪、抗低质量，常与 zxing 互补</td>
+</tr>
+<tr>
+<td><strong>zbar (pyzbar)</strong></td>
+<td>Python</td>
+<td>一维码稳健</td>
+</tr>
+<tr>
+<td><strong>bardecoder（v1 原程序）</strong></td>
+<td>Python（可选）</td>
+<td>兼容你朋友那一版的多预处理链路</td>
+</tr>
+<tr>
+<td><strong>jsQR</strong></td>
+<td>浏览器</td>
+<td>极快、体积小，专攻 QR</td>
+</tr>
+<tr>
+<td><strong>ZXing-js</strong></td>
+<td>浏览器</td>
+<td>浏览器侧的多码制选手</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="2">2. 安装与运行要求</h2>
+<h3 id="21">2.1 只用网页版（推荐）</h3>
+<ul>
+<li><strong>不需要安装任何东西</strong>。双击 <code>docs/index.html</code> 即可（Chrome / Edge / Firefox / Safari 现代版本）。</li>
+<li>想用「本机增强引擎」（OpenCV / zbar / bardecoder）才需要 Python。</li>
+</ul>
+<h3 id="22-python">2.2 用 Python 版</h3>
+<pre><code class="language-bash"># 1) 确认 Python
+python --version          # 需要 3.10 以上
+
+# 2) 安装依赖（在项目根目录执行）
+python -m pip install -r requirements.txt
+
+# 3) 自检（应输出 ALL PASSED）
+python tests/smoke_test.py
+
+# 4) 启动网页版
+python -m qrsuite --serve
+</code></pre>
+<p>依赖清单（<code>requirements.txt</code>）：</p>
+<table>
+<thead>
+<tr>
+<th>包</th>
+<th>作用</th>
+<th>是否必需</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>zxing-cpp</code></td>
+<td>主力解码引擎</td>
+<td>建议</td>
+</tr>
+<tr>
+<td><code>opencv-contrib-python-headless</code></td>
+<td>QRCodeDetector、图像预处理、WeChatQRCode</td>
+<td>建议</td>
+</tr>
+<tr>
+<td><code>pyzbar</code></td>
+<td>一维码引擎</td>
+<td>建议</td>
+</tr>
+<tr>
+<td><code>Pillow</code></td>
+<td>读图（兼容中文路径、EXIF 方向）</td>
+<td>必需</td>
+</tr>
+<tr>
+<td><code>numpy</code></td>
+<td>数组运算</td>
+<td>必需</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>只装 <code>Pillow + numpy</code> 也能跑（无引擎时会提示「至少 1 个引擎可用」失败）。至少要装 <code>zxing-cpp</code> 或 <code>opencv</code> 之一。</p>
+</blockquote>
+<hr />
+<h2 id="3">3. 网页版使用详解</h2>
+<h3 id="31">3.1 三种打开方式</h3>
+<table>
+<thead>
+<tr>
+<th>方式</th>
+<th>命令 / 操作</th>
+<th>适用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>本地服务</strong>（推荐）</td>
+<td><code>python -m qrsuite --serve</code> 或 <code>run.bat</code> 选 1</td>
+<td>想要「本机增强引擎」+ 可分享给同机其他程序</td>
+</tr>
+<tr>
+<td><strong>直接打开文件</strong></td>
+<td>双击 <code>docs/index.html</code></td>
+<td>什么都不装，快速用</td>
+</tr>
+<tr>
+<td><strong>线上部署</strong></td>
+<td>部署 <code>docs/</code> 到 GitHub Pages</td>
+<td>发给别人用，手机也能开</td>
+</tr>
+</tbody>
+</table>
+<p>本地服务默认端口 <strong>8765</strong>，被占用会自动顺延（8765 → 8784）。启动后浏览器会自动打开；关闭命令行窗口即停止服务。</p>
+<h3 id="32">3.2 三种投喂图片的方式</h3>
+<ol>
+<li><strong>拖拽</strong>：把图片拖到中间的虚线框（可以一次拖多张，或直接拖一个文件夹里的多张）。</li>
+<li><strong>点击</strong>：点虚线框 → 选择文件（可多选）。</li>
+<li><strong>粘贴</strong>：<code>Ctrl+V</code> 直接粘贴剪贴板里的截图（QQ / 微信 / 系统截图工具都行）。</li>
+</ol>
+<blockquote>
+<p>支持：PNG / JPG / JPEG / GIF / BMP / WEBP。<strong>图片不会被上传</strong>，全部在你本机内存里解码。</p>
+</blockquote>
+<h3 id="33">3.3 三个模式怎么选</h3>
+<table>
+<thead>
+<tr>
+<th>模式</th>
+<th>尝试的阶段</th>
+<th>速度（实测）</th>
+<th>什么时候用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>快速</strong></td>
+<td>原图、Otsu 二值化</td>
+<td>~44 ms/张</td>
+<td>截图/标准二维码，追求最省 CPU</td>
+</tr>
+<tr>
+<td><strong>均衡</strong>（默认）</td>
+<td>前 7 个阶段</td>
+<td>~80 ms/张</td>
+<td>日常万能，命中即停</td>
+</tr>
+<tr>
+<td><strong>深度</strong></td>
+<td>全部 13+ 个变体</td>
+<td>0.5~1.5 s/张</td>
+<td>模糊、反色、倾斜、局部损坏的疑难图</td>
+</tr>
+</tbody>
+</table>
+<p>页面上的「阶段」就是本次实际尝试的预处理变体数量——<strong>数字越小说明越早命中</strong>（页面上会标注「早退」）。</p>
+<h3 id="34">3.4 交叉验证</h3>
+<p>勾选 <strong>交叉验证</strong> 后，必须<strong>两个引擎给出相同内容</strong>才判定成功。
+适合场景：内容要拿去做敏感操作（付款、登录），宁可失败也不接受误读。</p>
+<h3 id="35">3.5 本机增强引擎（只有本地服务才有）</h3>
+<p>用 <code>python -m qrsuite --serve</code> 打开时，页面会自动探测到后端，多出一个开关：</p>
+<ul>
+<li><strong>勾选</strong>：浏览器解码之外，再把图片交给本机 Python 引擎跑一遍，结果合并展示（引擎徽章会带 <code>py:</code> 前缀，例如 <code>py:cv2</code>、<code>py:zbar</code>）。</li>
+<li><strong>不勾选</strong>：纯浏览器解码，最省资源。</li>
+</ul>
+<p>GitHub Pages 上没有后端，所以这个开关不会出现。</p>
+<h3 id="36">3.6 结果卡片怎么读</h3>
+<pre><code>┌──────┐  h_noise.png
+│ 缩略图│  290×290 · 解出 1 条 · 87ms · 3 阶段 · 早退 · 本机增强
+│      │  ┌────────┐ ┌──────────┐ ┌────────────────┐
+│      │  │ QRCode │ │ py:zxing │ │ Otsu二值化 放大2倍 │
+└──────┘  └────────┘ └──────────┘ └────────────────┘
+          HARD-QR-2026                     [复制] [打开链接]
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>元素</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>黄色徽章</td>
+<td><strong>码制</strong>（QRCode / PDF417 / CODE_128 …）</td>
+</tr>
+<tr>
+<td>绿色徽章</td>
+<td><strong>命中的引擎</strong>（<code>py:</code> 前缀 = 来自本机 Python 后端）</td>
+</tr>
+<tr>
+<td>灰色徽章</td>
+<td><strong>生效的预处理变体</strong>（最多显示 4 个）</td>
+</tr>
+<tr>
+<td><code>3 阶段 · 早退</code></td>
+<td>只试了 3 个变体就命中，后面的没跑（省 CPU）</td>
+</tr>
+<tr>
+<td><code>[复制]</code></td>
+<td>复制识别内容到剪贴板</td>
+</tr>
+<tr>
+<td><code>[打开链接]</code></td>
+<td>内容是网址时直接用浏览器打开</td>
+</tr>
+</tbody>
+</table>
+<h3 id="37">3.7 识别历史与导出</h3>
+<ul>
+<li>所有结果自动存进<strong>本机浏览器</strong>的 <code>localStorage</code>（不上传、不过期，默认保留最近 200 条）。</li>
+<li>页面底部「识别历史」：点内容即复制；「导出 JSON」给程序用；「导出 CSV」用 Excel 打开（已加 BOM，中文不乱码）。</li>
+<li>「清空」只清当前浏览器里的记录。</li>
+</ul>
+<h3 id="38">3.8 性能与并发</h3>
+<ul>
+<li>解码跑在 <strong>Web Worker 后台线程</strong>，界面不会卡；并发数 = CPU 核数 − 1（最多 4）。</li>
+<li>多张图会排队并行解码，一张失败不影响其他张。</li>
+</ul>
+<hr />
+<h2 id="4">4. 命令行使用详解</h2>
+<h3 id="41">4.1 基本用法</h3>
+<pre><code class="language-bash">python -m qrsuite &lt;图片/目录/URL&gt; [更多输入...] [选项]
+</code></pre>
+<h3 id="42">4.2 常用示例</h3>
+<pre><code class="language-bash"># 单张图片
+python -m qrsuite qr.png
+
+# 一次多张
+python -m qrsuite a.png b.jpg c.webp
+
+# 整个目录（自动递归子目录）
+python -m qrsuite D:\pics
+
+# 通配符
+python -m qrsuite &quot;D:\pics\*.png&quot;
+
+# 图片 URL（会先下载再解码）
+python -m qrsuite &quot;https://example.com/qr.png&quot;
+
+# 快速模式 + 打印每张的明细
+python -m qrsuite D:\pics --mode fast -v
+
+# 结果存 JSON
+python -m qrsuite D:\pics --json result.json
+
+# 交叉验证（需 ≥2 引擎一致）
+python -m qrsuite qr.png --verify
+
+# 只用一个引擎（排障用）
+python -m qrsuite qr.png --engines zxing
+
+# 交互式（不带参数时，回车后输入路径或 URL，多个用逗号分隔）
+python -m qrsuite
+</code></pre>
+<h3 id="43">4.3 全部参数</h3>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>说明</th>
+<th>默认</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>paths...</code></td>
+<td>图片路径 / 目录 / 通配符 / 图片 URL，可多个</td>
+<td>无（缺省转交互输入）</td>
+</tr>
+<tr>
+<td><code>--mode {fast,balanced,deep}</code></td>
+<td>解码深度</td>
+<td><code>balanced</code></td>
+</tr>
+<tr>
+<td><code>--verify</code></td>
+<td>交叉验证：需 ≥2 引擎一致才判定成功</td>
+<td>关</td>
+</tr>
+<tr>
+<td><code>--engines LIST</code></td>
+<td>只启用指定引擎，逗号分隔：<code>zxing,cv2,zbar,wechat,original</code></td>
+<td>全部可用引擎</td>
+</tr>
+<tr>
+<td><code>--max-side N</code></td>
+<td>大图先缩放到该边长（像素），降低 CPU</td>
+<td><code>1800</code></td>
+</tr>
+<tr>
+<td><code>--dir</code></td>
+<td>把参数当目录处理（<code>paths</code> 已是目录时也自动递归）</td>
+<td>关</td>
+</tr>
+<tr>
+<td><code>--json FILE</code></td>
+<td>结果写入 JSON</td>
+<td>无</td>
+</tr>
+<tr>
+<td><code>-v, --verbose</code></td>
+<td>打印每张的阶段数 / 引擎调用数 / CPU 时间 / 是否早退</td>
+<td>关</td>
+</tr>
+<tr>
+<td><code>--serve</code></td>
+<td>启动本地网页服务</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>--port N</code></td>
+<td>网页服务端口</td>
+<td><code>8765</code></td>
+</tr>
+<tr>
+<td><code>--no-browser</code></td>
+<td>启动服务时不自动开浏览器</td>
+<td>关</td>
+</tr>
+<tr>
+<td><code>--fetch-models</code></td>
+<td>下载 WeChatQRCode 模型（可选引擎）</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>--original-exe PATH</code></td>
+<td>挂载 v1 的 <code>QRCodeScanner.exe</code> 作为 <code>original</code> 引擎</td>
+<td>读环境变量 <code>QRSUITE_ORIGINAL_EXE</code></td>
+</tr>
+<tr>
+<td><code>--model-dir PATH</code></td>
+<td>WeChatQRCode 模型目录</td>
+<td><code>qrsuite/wechat_models</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="44">4.4 输出解读</h3>
+<pre><code>[1/13] ..\cases\h_noise.png
+  ✓ [QRCode] HARD-QR-2026
+     引擎: zxing | 生效变体: Otsu二值化
+     阶段 3 / 引擎调用 6 / 用时 0.087s / CPU 0.081s / 早退      ← 只有 -v 才有这行
+------------------------------------------------------------------------------
+完成: 13 个输入, 解出 12 条, 墙钟 0.32s, CPU 0.45s, 平均 0.025s/张
+</code></pre>
+<ul>
+<li><strong>墙钟</strong>：真实等待时间；<strong>CPU 时间</strong>：真正占用的 CPU（多线程引擎会大于墙钟）。</li>
+<li><strong>阶段</strong>：实际尝试的预处理变体数；<strong>引擎调用</strong>：真正调用的引擎次数。</li>
+<li>退出码：解出至少 1 条 = <code>0</code>，一条都没解出 = <code>1</code>（方便脚本判断）。</li>
+</ul>
+<h3 id="45">4.5 在脚本/批处理里用</h3>
+<pre><code class="language-bat">:: Windows 批处理：扫描拖进来的文件
+python -m qrsuite %* --json out.json
+if errorlevel 1 echo 没有识别出任何二维码
+</code></pre>
+<pre><code class="language-bash"># Linux/macOS：管道 + jq
+python -m qrsuite ./pics --json out.json &gt;/dev/null &amp;&amp; jq -r '.[].text' out.json
+</code></pre>
+<hr />
+<h2 id="5-windows">5. Windows 一键启动器</h2>
+<table>
+<thead>
+<tr>
+<th>文件</th>
+<th>位置</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>run.bat</code></td>
+<td>项目根目录</td>
+<td>菜单式入口：网页版 / 交互识别 / 快速扫目录 / 深度扫目录 / 下载模型 / 跑基准</td>
+</tr>
+<tr>
+<td><code>二维码网页版.bat</code></td>
+<td><code>E:\ToolDownloads</code></td>
+<td>直接拉起 v1 本地网页服务（旧版）</td>
+</tr>
+<tr>
+<td><code>二维码识别增强版.bat</code></td>
+<td><code>E:\ToolDownloads</code></td>
+<td>命令行版：把图片/文件夹<strong>拖到 bat 上</strong>直接识别</td>
+</tr>
+<tr>
+<td><code>二维码扫描器.bat</code></td>
+<td><code>E:\ToolDownloads</code></td>
+<td>只调用 v1 原程序（单引擎）</td>
+</tr>
+</tbody>
+</table>
+<p><strong>拖拽用法</strong>：把图片或文件夹拖到 <code>.bat</code> 图标上松手即可，结果留在窗口里（末尾有 <code>pause</code>，窗口不会一闪而过）。</p>
+<hr />
+<h2 id="6">6. 可选增强引擎</h2>
+<h3 id="61-wechatqrcode">6.1 WeChatQRCode（专治小图/模糊码）</h3>
+<p>它带超分模型，对「小而糊」的二维码效果明显。模型不随仓库分发，需要手动下载：</p>
+<pre><code class="language-bash">python -m qrsuite --fetch-models
+</code></pre>
+<p>脚本会依次尝试 jsdelivr / ghproxy / gitee / raw.githubusercontent 等多个镜像，成功后模型放在 <code>qrsuite/wechat_models/</code>：</p>
+<pre><code>qrsuite/wechat_models/
+├─ detect.prototxt
+├─ detect.caffemodel
+├─ sr.prototxt
+└─ sr.caffemodel
+</code></pre>
+<p>四个文件齐全时，引擎列表里会自动出现 <code>wechat</code>。<strong>下载失败不影响其它引擎</strong>。</p>
+<blockquote>
+<p>若你的网络屏蔽 GitHub（DNS 被改 / 公司网络），<code>--fetch-models</code> 可能全部镜像失败。可以让能从外网下载的朋友把 4 个文件发你，直接放进上面的目录即可。</p>
+</blockquote>
+<h3 id="62-v1">6.2 挂载 v1 原程序</h3>
+<pre><code class="language-bash"># 临时指定
+python -m qrsuite qr.png --mode deep --original-exe &quot;E:\ToolDownloads\QRCodeScanner.exe&quot;
+
+# 或设环境变量，之后一直生效
+set QRSUITE_ORIGINAL_EXE=E:\ToolDownloads\QRCodeScanner.exe
+</code></pre>
+<p>只在 <code>--mode deep</code> 且输入是本地文件时才会调用它（需要写临时文件、启动子进程，较慢）。</p>
+<hr />
+<h2 id="7">7. 识别不出来怎么办（排查清单）</h2>
+<p>按顺序试，通常第 2~4 步就能解决：</p>
+<ol>
+<li><strong>换模式</strong>：<code>--mode deep</code>（或页面切「深度」）。</li>
+<li><strong>剪裁重试</strong>：把二维码区域单独裁出来再识别（页面已内置四角/中心裁剪变体，但人工裁剪更狠）。</li>
+<li><strong>放大或缩小</strong>：太小的图先放大到 ≥300px；太大的截图先缩到 1800px 以内（<code>--max-side 1800</code>）。</li>
+<li><strong>加对比度 / 去反色</strong>：深色底浅色码、屏摄反光、低对比度截图，先做「反色 + 二值化」再试。</li>
+<li><strong>勾选交叉验证</strong>：如果解出来的内容像乱码或每次不一样，说明是<strong>误读</strong>，开启交叉验证可过滤。</li>
+<li><strong>确认码制</strong>：PDF417 / DataMatrix / Aztec 在浏览器版也支持；如果是一维码，注意别裁掉两端的静区（留白）。</li>
+<li><strong>确认不是"半张码"</strong>：二维码被裁掉一半、或关键定位角缺失时，<strong>任何解码器都无能为力</strong>，只能找回原图。</li>
+<li><strong>排障单引擎</strong>：<code>--engines zxing -v</code>、<code>--engines cv2 -v</code> 分别跑，看是哪个引擎能出结果。</li>
+</ol>
+<hr />
+<h2 id="8-faq">8. 常见问题 FAQ</h2>
+<p><strong>Q：网页点开是空白 / 一直转圈？</strong>
+A：确认 <code>docs/vendor/jsQR.js</code>、<code>docs/vendor/zxing.min.js</code> 存在。若从 GitHub Pages 打开，检查仓库 Settings → Pages 的目录是否选了 <code>/docs</code>。浏览器 F12 看 Console 报错最准。</p>
+<p><strong>Q：端口 8765 被占用？</strong>
+A：程序会自动顺延到 8766…8784。也可以手动指定：<code>python -m qrsuite --serve --port 9000</code>。</p>
+<p><strong>Q：<code>pip install</code> 很慢或失败？</strong>
+A：换国内源：<code>python -m pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple</code>。</p>
+<p><strong>Q：中文路径/中文文件名读不了？</strong>
+A：Python 版用 Pillow 读图并做了 EXIF 方向处理，中文路径没问题。若你用其它库自行调用，注意 Windows 上 <code>cv2.imread</code> 不支持中文路径（本项目已规避）。</p>
+<p><strong>Q：杀毒软件报警？</strong>
+A：本项目没有可执行文件（<code>.bat</code> 只是调用 Python）。若你保留了 v1 的 <code>QRCodeScanner.exe</code>，它未签名，可能触发 SmartScreen——那是原程序的事，与本项目无关。</p>
+<p><strong>Q：图片会被上传吗？</strong>
+A：不会。本地服务只监听 <code>127.0.0.1</code>，浏览器版全部在本机内存解码。唯一的网络请求是你在命令行里<strong>主动</strong>传入图片 URL 时的那次下载。</p>
+<p><strong>Q：识别结果里同时出现多个引擎徽章，是重复了吗？</strong>
+A：不是。同一内容被多个引擎确认，<strong>置信度更高</strong>；结果按内容去重，只显示一条。</p>
+<p><strong>Q：能识别手机拍屏幕的照片吗？</strong>
+A：能，但屏摄会有摩尔纹和反光。建议用「深度」模式，并尽量让二维码占画面一半以上。</p>
+<p><strong>Q：能同时处理多少张？</strong>
+A：没有硬上限。页面按 CPU 核数并发解码（最多 4 个 Worker）；命令行一张张顺序处理。</p>
+<hr />
+<h2 id="9">9. 部署与维护（给维护者）</h2>
+<h3 id="91-github-pages">9.1 部署到 GitHub Pages</h3>
+<ol>
+<li>推送到 GitHub（分支 <code>main</code>）。</li>
+<li><strong>Settings → Pages → Source</strong>：
+   - 选 <code>Deploy from a branch</code> → <code>main</code> → <code>/docs</code>，保存后 1 分钟上线；<strong>或</strong>
+   - 选 <code>GitHub Actions</code>，由 <code>.github/workflows/pages.yml</code> 自动发布。</li>
+<li>访问 <code>https://&lt;用户名&gt;.github.io/&lt;仓库名&gt;/</code>。</li>
+</ol>
+<blockquote>
+<p><code>docs/</code> 已包含 <code>.nojekyll</code>，且所有前端资源本地化，无 CDN 依赖，离线也能用。</p>
+</blockquote>
+<h3 id="92">9.2 升级前端解码库</h3>
+<pre><code class="language-bash">npm pack jsqr@latest               # 或用 npm registry 直接下载 tgz
+npm pack @zxing/library@latest
+# 解包后替换 docs/vendor/jsQR.js 与 docs/vendor/zxing.min.js
+# 同时更新 docs/vendor/LICENSE.*.txt 与 THIRD_PARTY_NOTICES.md 中的版本号
+node --check docs/decode.js        # 语法自检
+</code></pre>
+<h3 id="93">9.3 回归测试</h3>
+<pre><code class="language-bash">python tests/smoke_test.py                      # 引擎可用性 + 端到端 + 早退行为
+python tests/bench.py ./cases /path/to/v1.py    # 性能/精度基准对比
+node -e &quot;require('./docs/decode.js')&quot;           # 前端解码模块可加载
+</code></pre>
+<h3 id="94">9.4 发版建议</h3>
+<ul>
+<li>语义化版本：破坏性改动 <code>3.0.0</code>，新引擎/新模式 <code>2.1.0</code>，修复 <code>2.0.1</code>。</li>
+<li>更新 <code>qrsuite/__init__.py</code> 的 <code>__version__</code>，并在 README 顶部补变更摘要。</li>
+</ul>
+<hr />
+<h2 id="10">10. 附录</h2>
+<h3 id="101">10.1 命令速查</h3>
+<pre><code class="language-bash">python -m qrsuite --serve                    # 网页版（推荐）
+python -m qrsuite qr.png                     # 单张
+python -m qrsuite ./pics --mode fast -v      # 目录 + 快速 + 明细
+python -m qrsuite ./pics --json out.json     # 导出 JSON
+python -m qrsuite qr.png --verify            # 交叉验证
+python -m qrsuite --fetch-models             # 下载 WeChat 模型
+python tests/smoke_test.py                   # 自检
+python tests/bench.py ./cases old.py         # 基准对比
+</code></pre>
+<h3 id="102">10.2 术语</h3>
+<table>
+<thead>
+<tr>
+<th>术语</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>阶段 / 变体</strong></td>
+<td>一种预处理后的图像（原图、二值化、放大 2×…）；阶段数=实际尝试了几个</td>
+</tr>
+<tr>
+<td><strong>早退</strong></td>
+<td>命中后立刻停止，不再跑剩余阶段</td>
+</tr>
+<tr>
+<td><strong>交叉验证</strong></td>
+<td>要求 ≥2 个引擎结果一致</td>
+</tr>
+<tr>
+<td><strong>墙钟 / CPU 时间</strong></td>
+<td>真实耗时 / 实际占用的 CPU 时间</td>
+</tr>
+<tr>
+<td><strong>引擎</strong></td>
+<td>一个独立的解码器实现（zxing / cv2 / zbar / wechat / original / jsQR / ZXing-js）</td>
+</tr>
+</tbody>
+</table>
+<h3 id="103">10.3 目录结构</h3>
+<pre><code>qrsuite-v2/
+├─ qrsuite/             Python 包（core 引擎策略 / cli 入口 / web 服务 / models 模型）
+├─ docs/                GitHub Pages 站点（index.html、app.js、decode.js、worker、vendor）
+├─ tests/               smoke_test.py（自检）、bench.py（基准）
+├─ run.bat              Windows 菜单式入口
+├─ requirements.txt     依赖
+└─ README.md · MANUAL.md · LICENSE · THIRD_PARTY_NOTICES.md
+</code></pre>
+<h3 id="104-13">10.4 性能参考（13 张混合用例，同一台机器）</h3>
+<table>
+<thead>
+<tr>
+<th>方案</th>
+<th style="text-align: right;">墙钟</th>
+<th style="text-align: right;">CPU</th>
+<th style="text-align: right;">阶段总数</th>
+<th style="text-align: right;">解出</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>v1 旧流程（跑满 18 变体）</td>
+<td style="text-align: right;">3.40 s</td>
+<td style="text-align: right;">6.78 s</td>
+<td style="text-align: right;">234</td>
+<td style="text-align: right;">12/13</td>
+</tr>
+<tr>
+<td>v2 快速</td>
+<td style="text-align: right;">0.19 s</td>
+<td style="text-align: right;">0.19 s</td>
+<td style="text-align: right;">15</td>
+<td style="text-align: right;">11/13</td>
+</tr>
+<tr>
+<td>v2 均衡（默认）</td>
+<td style="text-align: right;">0.32 s</td>
+<td style="text-align: right;">0.45 s</td>
+<td style="text-align: right;">21</td>
+<td style="text-align: right;">12/13</td>
+</tr>
+<tr>
+<td>v2 深度（含 v1 子进程）</td>
+<td style="text-align: right;">8.69 s</td>
+<td style="text-align: right;">0.95 s</td>
+<td style="text-align: right;">30</td>
+<td style="text-align: right;">12/13</td>
+</tr>
+<tr>
+<td>浏览器版（jsQR+ZXing-js）</td>
+<td style="text-align: right;">平均 44 ms/张（快速）</td>
+<td style="text-align: right;">—</td>
+<td style="text-align: right;">平均 1.2</td>
+<td style="text-align: right;">12/13</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<p><em>手册随代码一起维护：<code>MANUAL.md</code> 是本文件，<code>docs/manual.html</code> 是同一内容的网页版。</em></p>
+</div></body></html>

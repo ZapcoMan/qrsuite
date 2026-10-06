@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="utf-8"><title>QRSuite v2 介绍图（竖版）</title>
+<link rel="stylesheet" href="intro.css">
+<style>html,body{width:1200px;height:1650px} .card{justify-content:space-between} .foot{margin-top:0}</style>
+</head><body>
+<div class="card" style="width:1200px;height:1780px">
+
+  <div>
+    <div class="brand">
+      <div class="logo">🔳</div>
+      <div>
+        <h1>QR<span>Suite</span> <span style="font-size:22px;color:#93a5c2">v2</span></h1>
+        <div class="sub">从「单文件 CLI」→「多引擎 + 网页 + 可部署」的二维码识别工具</div>
+      </div>
+      <div style="margin-left:auto;text-align:right">
+        <div class="pill">v2.0 · 2026</div>
+      </div>
+    </div>
+    <div class="byline">基于原版 QRCodeScanner.exe 的重构分支 · 原程序保留为可选引擎，二进制与版权尊重原作者</div>
+  </div>
+
+  <div>
+    <h2>核心变化</h2>
+    <div class="metrics">
+      <div class="m blue"><div class="k">解码引擎</div><div class="v">1 <small>→</small> 6</div><div class="d">多引擎并联</div></div>
+      <div class="m green"><div class="k">支持码制</div><div class="v">1 <small>→</small> 10+</div><div class="d">QR / DM / Aztec / PDF417…</div></div>
+      <div class="m warm"><div class="k">识别速度</div><div class="v">10.5<small>×</small></div><div class="d">3.40s → 0.32s</div></div>
+      <div class="m pink"><div class="k">CPU 占用</div><div class="v">15<small>×↓</small></div><div class="d">6.78s → 0.45s</div></div>
+    </div>
+  </div>
+
+  <div>
+    <h2>新增能力</h2>
+    <div class="grid">
+      <div class="f"><div class="i">🧩</div><div><b>多引擎并联 + 交叉验证</b>
+        <p>zxing-cpp · OpenCV · zbar · WeChatQRCode · 原版 bardecoder。
+        <em>--verify</em> 要求 ≥2 引擎一致，抑制误读。</p></div></div>
+      <div class="f"><div class="i">⚡</div><div><b>级联 + 早退解析策略</b>
+        <p>变体按「命中率高/代价低」排序，<em>命中即停</em>；大图先降采样、仅小图放大。
+        阶段数 234 → 21。</p></div></div>
+      <div class="f"><div class="i">🖱️</div><div><b>四种输入方式</b>
+        <p>命令行参数 / 目录递归 / 拖拽 / <em>Ctrl+V</em> 粘贴 / 图片 URL。
+        原版只能手动敲路径。</p></div></div>
+      <div class="f"><div class="i">🌐</div><div><b>GitHub Pages 静态站</b>
+        <p>纯前端解码，<em>零依赖零构建</em>；jsQR + ZXing-js 已本地化，不用 CDN，可离线。</p></div></div>
+      <div class="f"><div class="i">🧵</div><div><b>Web Worker 后台解码</b>
+        <p>多图并发，界面不卡；并发数按 CPU 核数自适应。平均 44ms/张（快速模式）。</p></div></div>
+      <div class="f"><div class="i">📄</div><div><b>结构化结果</b>
+        <p>逐条标注 <em>码制 / 命中引擎 / 生效变体</em>；支持 JSON、CSV 导出与识别历史。</p></div></div>
+      <div class="f"><div class="i">📦</div><div><b>一个包，统一入口</b>
+        <p>原三个脚本合并为 <em>python -m qrsuite</em>：识别 / 起服务 / 下模型，一条命令。</p></div></div>
+      <div class="f"><div class="i">🧪</div><div><b>测试与文档齐备</b>
+        <p>smoke_test 11 项全过；bench 可复现 v1/v2 性能对比；含使用手册与变更记录。</p></div></div>
+    </div>
+  </div>
+
+  <div>
+    <h2>架构</h2>
+    <div class="arch">
+      <div class="a">
+        <h3>🌐 docs/ · 浏览器端（可上线）</h3>
+        <div class="tags">
+          <span class="t">jsQR</span><span class="t">ZXing-js</span><span class="t g">Web Worker</span>
+          <span class="t g">零 CDN</span><span class="t">GitHub Pages</span>
+        </div>
+        <div class="note">拖拽 / 粘贴 / 多图并发 / 交叉验证 / 历史 / 导出。<br>图片全程在本机内存解码，不上传。</div>
+      </div>
+      <div class="a">
+        <h3>🐍 qrsuite/ · Python 端（高精度）</h3>
+        <div class="tags">
+          <span class="t">zxing-cpp</span><span class="t">OpenCV</span><span class="t">zbar</span>
+          <span class="t">WeChatQRCode</span><span class="t g">原版引擎可挂载</span>
+        </div>
+        <div class="note">CLI + 本地服务 + 结果缓存。<br>静态页检测到本机服务时自动启用「增强引擎」。</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="compat">
+    ♻️ <b>兼容你的原版</b>：<code>--original-exe QRCodeScanner.exe</code> 即可把它作为 <b>original</b> 引擎一并调用，
+    擅长的小图/模糊场景仍然吃它的预处理链路；仓库不内置该二进制，署名与版权归你。
+  </div>
+
+  <div class="foot">
+    <div>精度持平：12/13 用例 <span class="dot">·</span> 墙钟 10.5× <span class="dot">·</span> CPU 15×↓</div>
+    <div>MANUAL.md <span class="dot">·</span> CHANGELOG.md <span class="dot">·</span> tests/bench.py <span class="dot">·</span> MIT</div>
+  </div>
+
+</div>
+</body></html>

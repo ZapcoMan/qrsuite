@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 自适应图标前景：QR 定位符 + 少量数据模块，安全区 48dp 居中 -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- 数据模块（点缀） -->
+    <path android:fillColor="#FFFFFF" android:pathData="M36,36h4v4h-4z" />
+    <path android:fillColor="#FFFFFF" android:pathData="M46,42h4v4h-4z" />
+    <path android:fillColor="#FFFFFF" android:pathData="M62,36h4v4h-4z" />
+    <path android:fillColor="#FFFFFF" android:pathData="M70,44h4v4h-4z" />
+    <path android:fillColor="#FFFFFF" android:pathData="M36,60h4v4h-4z" />
+    <path android:fillColor="#FFFFFF" android:pathData="M46,56h4v4h-4z" />
+    <path android:fillColor="#FFFFFF" android:pathData="M58,62h4v4h-4z" />
+    <path android:fillColor="#FFFFFF" android:pathData="M68,58h4v4h-4z" />
+    <path android:fillColor="#FFFFFF" android:pathData="M38,70h4v4h-4z" />
+    <path android:fillColor="#FFFFFF" android:pathData="M50,72h4v4h-4z" />
+    <path android:fillColor="#FFFFFF" android:pathData="M62,70h4v4h-4z" />
+    <path android:fillColor="#FFFFFF" android:pathData="M72,68h4v4h-4z" />
+
+    <!-- 左下定位符 -->
+    <path android:fillColor="#FFFFFF" android:pathData="M30,71h13.5v13.5h-13.5z" />
+    <path android:fillColor="#5B3FD6" android:pathData="M33.75,74.75h6v6h-6z" />
+    <path android:fillColor="#FFFFFF" android:pathData="M36.25,77.25h2.75v2.75h-2.75z" />
+
+    <!-- 右上定位符 -->
+    <path android:fillColor="#FFFFFF" android:pathData="M64.5,23.5h13.5v13.5h-13.5z" />
+    <path android:fillColor="#5B3FD6" android:pathData="M68.25,27.25h6v6h-6z" />
+    <path android:fillColor="#FFFFFF" android:pathData="M70.75,29.75h2.75v2.75h-2.75z" />
+
+    <!-- 左上定位符 -->
+    <path android:fillColor="#FFFFFF" android:pathData="M30,23.5h13.5v13.5h-13.5z" />
+    <path android:fillColor="#5B3FD6" android:pathData="M33.75,27.25h6v6h-6z" />
+    <path android:fillColor="#2AE6A8" android:pathData="M36.25,29.75h2.75v2.75h-2.75z" />
+</vector>

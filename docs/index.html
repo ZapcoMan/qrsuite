@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>QRSuite · 多引擎二维码识别</title>
+<meta name="description" content="纯浏览器端二维码/条码识别：支持 QR / MicroQR / DataMatrix / Aztec / PDF417 / 一维码，图片不上传，可离线使用。">
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔳</text></svg>">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0e1320">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta property="og:type" content="website">
+<meta property="og:title" content="QRSuite · 多引擎二维码识别">
+<meta property="og:description" content="浏览器内本地解码，支持 QR / MicroQR / DataMatrix / Aztec / PDF417 / 一维码；识别速度 10.5×、CPU 15×↓；图片不上传。">
+<meta property="og:image" content="og.png">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+<header>
+  <h1>QR<span>Suite</span> <small>v2</small></h1>
+  <p class="sub">
+    浏览器内本地解码 · 支持 <b>QR / MicroQR / DataMatrix / Aztec / PDF417 / Code128·39·93 / EAN·UPC / ITF / Codabar</b><br>
+    图片<b>不会被上传</b>，全部在本机内存处理，可离线使用。
+  </p>
+</header>
+
+<main>
+  <div id="env" class="env">正在初始化…</div>
+
+  <section id="drop" tabindex="0">
+    <div class="big">🖼️</div>
+    <div class="t">拖拽图片到这里，或点击选择文件</div>
+    <div class="s">支持一次多张 · 支持 <b>Ctrl+V</b> 粘贴截图 · 支持摄像头拍的原图</div>
+    <input id="file" type="file" accept="image/*" multiple class="vh">
+  </section>
+
+  <section class="opts">
+    <label>模式
+      <select id="mode">
+        <option value="fast">快速（只试 2 阶段，最省 CPU）</option>
+        <option value="balanced" selected>均衡（默认，命中即停）</option>
+        <option value="deep">深度（全部变体，最难图）</option>
+      </select>
+    </label>
+    <label title="要求 2 个引擎结果一致才判定成功，可降低误读"><input id="verify" type="checkbox"> 交叉验证</label>
+    <button id="selftest" title="在浏览器内生成一张二维码再解码，验证整条链路">🧪 自检</button>
+    <span id="backend-row" style="display:none">
+      <label title="调用本机 Python 多引擎（OpenCV / zbar / bardecoder / WeChatQRCode）">
+        <input id="backend" type="checkbox" checked> 本机增强引擎</label>
+      <span class="hint" id="backend-engines"></span>
+    </span>
+  </section>
+
+  <div id="stats" class="stats"></div>
+  <div id="list"></div>
+
+  <section class="hist">
+    <div class="hhead">
+      <b>识别历史</b> <span class="hint">（存于本机浏览器，共 <span id="hcount">0</span> 条）</span>
+      <span class="grow"></span>
+      <button id="exp-json">导出 JSON</button>
+      <button id="exp-csv">导出 CSV</button>
+      <button id="clear">清空</button>
+    </div>
+    <div id="hlist"></div>
+  </section>
+</main>
+
+<footer>
+  <p>
+    <a href="./manual.html">📖 使用手册</a> ·
+    <a href="https://github.com/" target="_blank" rel="noopener">项目仓库</a> ·
+    浏览器解码 jsQR + ZXing-js（本地化，无 CDN 依赖）· 本机 Python 后端可选
+  </p>
+</footer>
+
+<script src="vendor/jsQR.js"></script>
+<script src="vendor/zxing.min.js"></script>
+<script src="decode.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

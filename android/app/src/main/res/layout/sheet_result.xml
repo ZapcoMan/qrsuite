@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_sheet"
+    android:orientation="vertical"
+    android:paddingStart="20dp"
+    android:paddingTop="14dp"
+    android:paddingEnd="20dp"
+    android:paddingBottom="22dp">
+
+    <View
+        android:layout_width="40dp"
+        android:layout_height="4dp"
+        android:layout_gravity="center_horizontal"
+        android:background="#33FFFFFF" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/resFormat"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_version_chip"
+            android:fontFamily="sans-serif-medium"
+            android:paddingStart="10dp"
+            android:paddingTop="4dp"
+            android:paddingEnd="10dp"
+            android:paddingBottom="4dp"
+            android:text="QR Code"
+            android:textColor="@color/accent"
+            android:textSize="12sp" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:layout_weight="1"
+            android:fontFamily="sans-serif-medium"
+            android:text="@string/result_title"
+            android:textColor="@color/on_surface"
+            android:textSize="17sp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/resClose"
+            style="@style/Widget.Material3.Button.IconButton"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:contentDescription="@string/continue_scan"
+            app:icon="@drawable/ic_close"
+            app:iconSize="20dp"
+            app:iconTint="@color/on_surface_dim" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/resContent"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="14dp"
+        android:background="@drawable/bg_content_box"
+        android:fontFamily="monospace"
+        android:maxLines="12"
+        android:padding="14dp"
+        android:textColor="@color/on_surface"
+        android:textIsSelectable="true"
+        android:textSize="14sp" />
+
+    <TextView
+        android:id="@+id/resMeta"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text=""
+        android:textColor="@color/on_surface_dim"
+        android:textSize="12sp" />
+
+    <!-- 主操作：复制 / 分享 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="18dp"
+        android:orientation="horizontal">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/resCopy"
+            style="@style/Widget.QRSuite.ActionButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/copy"
+            app:icon="@drawable/ic_copy" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/resShare"
+            style="@style/Widget.QRSuite.ActionButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:layout_weight="1"
+            android:text="@string/share"
+            app:icon="@drawable/ic_share" />
+    </LinearLayout>
+
+    <!-- 次要操作：打开链接 / 搜索（弱化为文字按钮，避免四个按钮挤一行） -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:gravity="center"
+        android:orientation="horizontal">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/resOpen"
+            style="@style/Widget.QRSuite.SubtleButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="打开链接"
+            app:icon="@drawable/ic_open" />
+
+        <View
+            android:layout_width="1dp"
+            android:layout_height="18dp"
+            android:layout_marginStart="2dp"
+            android:layout_marginEnd="2dp"
+            android:background="@color/outline" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/resSearch"
+            style="@style/Widget.QRSuite.SubtleButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/search"
+            app:icon="@drawable/ic_search" />
+    </LinearLayout>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/resContinue"
+        style="@style/Widget.QRSuite.SubtleButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:text="@string/continue_scan"
+        app:icon="@drawable/ic_qr" />
+
+</LinearLayout>

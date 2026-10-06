@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+
+    <style name="Theme.QRSuite" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/brand</item>
+        <item name="colorOnPrimary">#FFFFFF</item>
+        <item name="colorPrimaryContainer">@color/brand_deep</item>
+        <item name="colorOnPrimaryContainer">#FFFFFF</item>
+        <item name="colorSecondary">@color/accent</item>
+        <item name="colorOnSecondary">#06251B</item>
+        <item name="colorSurface">@color/surface</item>
+        <item name="colorOnSurface">@color/on_surface</item>
+        <item name="colorSurfaceVariant">@color/surface_high</item>
+        <item name="colorOnSurfaceVariant">@color/on_surface_dim</item>
+        <item name="colorOutline">@color/outline</item>
+        <item name="colorError">@color/warn</item>
+
+        <item name="android:colorBackground">@color/bg</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar">false</item>
+        <item name="android:windowBackground">@color/bg</item>
+        <item name="android:enforceNavigationBarContrast" tools:targetApi="29">false</item>
+        <item name="android:enforceStatusBarContrast" tools:targetApi="29">false</item>
+    </style>
+
+    <!-- 冷启动瞬间：直接给深色底 + 品牌色图标，避免白闪 -->
+    <style name="Theme.QRSuite.Splash" parent="Theme.QRSuite">
+        <item name="android:windowBackground">@drawable/splash_background</item>
+    </style>
+
+    <!-- 底部面板：圆角、无阴影，背景透明交给内容自绘 -->
+    <style name="Theme.QRSuite.Sheet" parent="Theme.Material3.DayNight.BottomSheetDialog">
+        <item name="bottomSheetStyle">@style/Widget.QRSuite.BottomSheet</item>
+    </style>
+
+    <style name="Widget.QRSuite.BottomSheet" parent="Widget.Material3.BottomSheet.Modal">
+        <item name="backgroundTint">@android:color/transparent</item>
+        <item name="android:background">@android:color/transparent</item>
+        <item name="behavior_peekHeight">auto</item>
+    </style>
+
+    <!-- 面板里的主操作按钮：26dp 圆角、无内缩、图标与文字间距统一 -->
+    <style name="Widget.QRSuite.ActionButton" parent="Widget.Material3.Button.TonalButton">
+        <item name="cornerRadius">24dp</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+        <item name="android:minHeight">48dp</item>
+        <item name="iconPadding">8dp</item>
+        <item name="iconSize">19dp</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:letterSpacing">0.01</item>
+    </style>
+
+    <!-- 次要操作：纯文字按钮，弱化视觉权重 -->
+    <style name="Widget.QRSuite.SubtleButton" parent="Widget.Material3.Button.TextButton">
+        <item name="cornerRadius">22dp</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+        <item name="iconPadding">6dp</item>
+        <item name="iconSize">18dp</item>
+        <item name="android:textSize">13sp</item>
+        <item name="android:textColor">@color/on_surface_dim</item>
+        <item name="iconTint">@color/on_surface_dim</item>
+    </style>
+
+    <!-- 顶栏/列表圆形图标按钮：去掉内容内缩，让点击反馈收敛为图标周围，不出现灰色圆块 -->
+    <style name="Widget.QRSuite.IconButton" parent="Widget.Material3.Button.IconButton">
+        <item name="android:layout_width">44dp</item>
+        <item name="android:layout_height">44dp</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+        <item name="android:insetLeft">0dp</item>
+        <item name="android:insetRight">0dp</item>
+        <item name="iconSize">21dp</item>
+        <item name="iconTint">@color/on_surface</item>
+        <item name="backgroundTint">@android:color/transparent</item>
+        <item name="rippleColor">#33FFFFFF</item>
+    </style>
+
+</resources>
