@@ -1,7 +1,10 @@
 # QRSuite Android CI
 #
-# 只做一件事：在 GitHub 上验证 android/ 源码可构建，并产出 debug 签名的可安装 APK 作为工件。
-# 注意：正式分发的 APK 用本地 keystore 签名（密钥不入库），CI 这里只验证「源码能构建」。
+# 目的：在 GitHub 上验证 android/ 源码可构建，并产出 debug 签名的可安装 APK 作为工件。
+# 注意：正式分发的 APK 用本地 keystore 签名（密钥不入库），CI 只验证「源码能构建」。
+#
+# 这里不用第三方 setup-android action：直接用 Google 官方 cmdline-tools 安装 SDK，
+# 少一层不可控依赖（第三方 action 版本变动/环境假设都可能导致 CI 挂掉）。
 name: Android CI
 
 on:
@@ -17,12 +20,13 @@ on:
 permissions:
   contents: read
 
+env:
+  ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
+  ANDROID_HOME: /usr/local/lib/android/sdk
+
 jobs:
   build:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: android
     steps:
       - uses: actions/checkout@v4
 
@@ -32,8 +36,20 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
+      - name: Install Android SDK (official cmdline-tools)
+        run: |
+          set -euo pipefail
+          mkdir -p "$ANDROID_SDK_ROOT/cmdline-tools"
+          cd /tmp
+          URL=https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip
+          curl -fsSL -o cmdline-tools.zip "$URL"
+          unzip -q cmdline-tools.zip -d "$ANDROID_SDK_ROOT/cmdline-tools"
+          mv "$ANDROID_SDK_ROOT/cmdline-tools/cmdline-tools" "$ANDROID_SDK_ROOT/cmdline-tools/latest"
+          export PATH="$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$PATH"
+          yes | sdkmanager --sdk_root="$ANDROID_SDK_ROOT" --licenses >/dev/null 2>&1 || true
+          sdkmanager --sdk_root="$ANDROID_SDK_ROOT" \
+            "platform-tools" "platforms;android-35" "build-tools;34.0.0"
+          echo "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin" >> "$GITHUB_PATH"
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
@@ -41,7 +57,8 @@ jobs:
           gradle-version: '8.11.1'
 
       - name: Build debug APK
-        run: gradle --no-daemon :app:assembleDebug
+        working-directory: android
+        run: gradle --no-daemon --console=plain :app:assembleDebug
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
