@@ -208,15 +208,18 @@ def build_stages(gray, color, max_side=1800):
 MODES = {
     # 快速：只跑最便宜的两个阶段，命中即停
     'fast':     dict(max_stages=2,  engines=('zxing', 'cv2'),           verify=False),
-    # 均衡（默认）：多引擎原图先试（含微信模型，专治抖音/赞赏码这类难码），
-    #              再到二值化级别；命中即停，简单码不会付微信模型的代价
-    'balanced': dict(max_stages=7,  engines=('zxing', 'cv2', 'zbar', 'wechat'), verify=False),
-    # 深度：全部阶段 + 全部引擎 + 可选 v1 程序；仍命中即停，除非开启 verify
+    # 均衡（默认）：命中率最高的三个引擎 + 二值化级别，命中即停。
+    #   注：微信模型不放在这里——它每张约 20ms，还有固定 ~0.2s 初始化，
+    #   在 13 张基准上会让默认模式墙钟从 0.32s 涨到 0.68s（2×），
+    #   而它多解出的那 1 张与"抖音/赞赏码"无关（那类私有码它也不支持），
+    #   为默认路径付 2× 代价不划算。需要它时用 deep。
+    'balanced': dict(max_stages=7,  engines=('zxing', 'cv2', 'zbar'),   verify=False),
+    # 深度：全部阶段 + 全部引擎（含微信模型与可选 v1 程序）；仍命中即停
     'deep':     dict(max_stages=99, engines=('zxing', 'cv2', 'zbar', 'wechat', 'original'), verify=False),
 }
 
-# 惰性引擎：代价高（微信模型约 20ms/张，比其它引擎贵一个量级），
-# 只在便宜的引擎全军覆没之后才补跑一次，避免简单图付这份代价。
+# 惰性引擎：代价高（微信模型 20ms/张 + 固定初始化开销），
+# 只在便宜的引擎全军覆没之后才补跑一次。目前仅 deep 模式启用。
 LAZY_ENGINES = ('wechat',)
 
 # 惰性引擎补跑时允许的阶段数上限（1=仅原图）
