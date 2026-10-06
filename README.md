@@ -17,6 +17,19 @@
 **🟢 在线试用（无需安装）：<https://ibsibxi.github.io/qrsuite/>**
 纯前端版本，图片不出浏览器；也可把 `docs/` 部署到你自己的静态托管。
 
+## ⬇️ 下载
+
+装好即用的版本在 [Releases](https://github.com/ibsibxi/qrsuite/releases/latest)：
+
+| 平台 | 文件 | 说明 |
+|---|---|---|
+| **Android** | [QRSuite-2.0.3-arm64.apk](https://github.com/ibsibxi/qrsuite/releases/download/v2.0.3/QRSuite-2.0.3-arm64.apk) | 7.59 MB，原生 CameraX + ML Kit，**仅 arm64**（现代手机），正式签名，无网络权限 |
+| **Windows** | [QRSuite.exe](https://github.com/ibsibxi/qrsuite/releases/download/v2.0.3/QRSuite.exe) | 80 MB，单文件版，双击启动本地服务并自动开浏览器 |
+
+> Android 装上后若曾装过 debug 签名版，需先卸载（签名不同无法覆盖安装）。
+> Windows 无数字签名，SmartScreen 提示时点"仍要运行"即可。
+> 仓库**有意不提交** `.apk` / `.exe`（二进制会污染版本历史），一律走 Releases 分发，源码仍可自行构建。
+
 ---
 
 ## ✨ 特性
