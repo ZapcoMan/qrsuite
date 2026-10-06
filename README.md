@@ -15,7 +15,8 @@
 [![Android](https://img.shields.io/badge/Android-arm64-brightgreen)](android/)
 
 **🟢 在线试用（无需安装）：<https://ibsibxi.github.io/qrsuite/>**
-纯前端版本，图片不出浏览器；也可把 `docs/` 部署到你自己的静态托管。
+纯前端版本，图片不出浏览器；**界面支持中英切换**（右上角按钮，自动跟随浏览器语言）。
+也可把 `docs/` 部署到你自己的静态托管。
 
 ## ⬇️ 下载
 
@@ -23,12 +24,35 @@
 
 | 平台 | 文件 | 说明 |
 |---|---|---|
-| **Android** | [QRSuite-2.0.3-arm64.apk](https://github.com/ibsibxi/qrsuite/releases/download/v2.0.3/QRSuite-2.0.3-arm64.apk) | 7.59 MB，原生 CameraX + ML Kit，**仅 arm64**（现代手机），正式签名，无网络权限 |
-| **Windows** | [QRSuite.exe](https://github.com/ibsibxi/qrsuite/releases/download/v2.0.3/QRSuite.exe) | 80 MB，单文件版，双击启动本地服务并自动开浏览器 |
+| **Android** | [QRSuite-2.0.4-arm64.apk](https://github.com/ibsibxi/qrsuite/releases/download/v2.0.4/QRSuite-2.0.4-arm64.apk) | 7.59 MB，原生 CameraX + ML Kit，**仅 arm64**（现代手机），正式签名，无网络权限，中/英界面 |
+| **Windows** | [QRSuite.exe](https://github.com/ibsibxi/qrsuite/releases/tag/v2.0.3) | 80 MB，单文件版，双击启动本地服务并自动开浏览器 |
 
 > Android 装上后若曾装过 debug 签名版，需先卸载（签名不同无法覆盖安装）。
-> Windows 无数字签名，SmartScreen 提示时点"仍要运行"即可。
+> Windows 目前**无数字签名**，SmartScreen 会提示"已保护你的电脑"，点"仍要运行"即可；
+> 消除该提示需购买代码签名证书（见下方「Windows 代码签名」）。
 > 仓库**有意不提交** `.apk` / `.exe`（二进制会污染版本历史），一律走 Releases 分发，源码仍可自行构建。
+
+### Android 发布由 CI 自动完成
+
+打 `v*` tag 即触发 `Android Release` 流程：构建**正式签名** APK → 自动校验"不是 debug 证书" → 上传到对应 Release。
+签名材料存放于仓库 Secrets（`SIGNING_KEYSTORE_BASE64` 等），**密钥不进代码库**。
+
+### Windows 代码签名（需自备证书）
+
+`tools/build_windows.py` 支持构建后签名（走 Windows SDK 的 `signtool`）：
+
+```powershell
+# 1) 购买代码签名证书（OV 可逐步建立声誉，EV 立即受信），导入证书存储或保留 .pfx
+# 2) 设置环境变量（不要写进任何仓库文件）
+$env:QRSUITE_SIGN_PFX      = 'C:\path\to\codesign.pfx'
+$env:QRSUITE_SIGN_PFX_PASS = '<口令>'
+# 3) 构建并签名
+python tools/build_windows.py --sign
+```
+
+CI 侧（`.github/workflows/windows.yml`）也支持：配置 `WINDOWS_CERT_PFX_BASE64` 与
+`WINDOWS_CERT_PASSWORD` 两个 Secret 后，打 tag 会自动构建并签名 Windows 产物；
+**未配置时照常构建，只是产物无签名**。
 
 ---
 
