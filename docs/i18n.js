@@ -202,13 +202,21 @@
     return s;
   }
 
-  /** 把带 data-i18n 的元素文本刷新一遍 */
+  /** 把带 data-i18n* 的元素刷新一遍。
+   *
+   *  注意：`querySelectorAll('[data-i18n]')` 只匹配**字面量**属性名，
+   *  不会匹配 `data-i18n-html` / `-title` / `-content`（它们是不同的属性名），
+   *  所以必须分别收集——曾因此漏译了两个含内联标签的文案（hero.lead / drop.sub）。
+   */
   function apply(rootEl) {
     const scope = rootEl || document;
+    // 纯文本
     scope.querySelectorAll('[data-i18n]').forEach(el => {
-      const key = el.getAttribute('data-i18n');
-      if (el.hasAttribute('data-i18n-html')) el.innerHTML = t(key);
-      else el.textContent = t(key);
+      el.textContent = t(el.getAttribute('data-i18n'));
+    });
+    // 含内联标签（<b> 等），需要 innerHTML
+    scope.querySelectorAll('[data-i18n-html]').forEach(el => {
+      el.innerHTML = t(el.getAttribute('data-i18n-html'));
     });
     scope.querySelectorAll('[data-i18n-title]').forEach(el => {
       el.setAttribute('title', t(el.getAttribute('data-i18n-title')));
