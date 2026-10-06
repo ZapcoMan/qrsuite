@@ -242,12 +242,18 @@ class Result:
     cpu: float = 0.0
     stopped_early: bool = False
     error: str = ''
+    # 无命中时附加的"样式化私有码"结构判定（见 qrsuite/stylized.py）。
+    # 它不做 payload 解码，只告诉用户"这是哪家的码、该用哪个 App 扫"。
+    stylized: dict | None = None
+    stylized_elapsed: float = 0.0
     def to_dict(self):
         return dict(results=[dict(text=h.text, format=h.format, engines=sorted(h.engines),
                                   variants=sorted(h.variants)) for h in self.hits],
                     stages=self.stages_tried, engine_runs=self.engine_runs,
                     elapsed=round(self.elapsed, 3), cpu=round(self.cpu, 3),
-                    early=self.stopped_early, error=self.error)
+                    early=self.stopped_early, error=self.error,
+                    stylized=self.stylized,
+                    stylized_elapsed=round(self.stylized_elapsed, 3))
 
 # ----------------------------------------------------------------------------- 解码器
 class Decoder:
@@ -266,21 +272,24 @@ class Decoder:
     def available_engines(self):
         return sorted(self.engines)
 
-    def decode_path(self, path, mode='balanced', verify=False, max_side=1800) -> Result:
+    def decode_path(self, path, mode='balanced', verify=False, max_side=1800,
+                    stylized=True) -> Result:
         try:
             color, gray = _imread_any(path)
         except Exception as e:
             return Result(error=f'无法读取图片: {e}')
-        return self.decode_arrays(color, gray, mode, verify, max_side, path)
+        return self.decode_arrays(color, gray, mode, verify, max_side, path, stylized)
 
-    def decode_bytes(self, data, mode='balanced', verify=False, max_side=1800) -> Result:
+    def decode_bytes(self, data, mode='balanced', verify=False, max_side=1800,
+                     stylized=True) -> Result:
         try:
             color, gray = from_bytes(data)
         except Exception as e:
             return Result(error=f'不是有效图片: {e}')
-        return self.decode_arrays(color, gray, mode, verify, max_side, None)
+        return self.decode_arrays(color, gray, mode, verify, max_side, None, stylized)
 
-    def decode_arrays(self, color, gray, mode='balanced', verify=False, max_side=1800, path=None) -> Result:
+    def decode_arrays(self, color, gray, mode='balanced', verify=False, max_side=1800,
+                      path=None, stylized=True) -> Result:
         cfg = MODES.get(mode, MODES['balanced'])
         want = tuple(e for e in cfg['engines'] if e in self.engines)
         eager = tuple(e for e in want if e not in LAZY_ENGINES)
@@ -347,6 +356,18 @@ class Decoder:
                 try: os.remove(tmp)
                 except OSError: pass
         res.hits = list(hits.values())
+        # 全部引擎都没命中时，附一条"样式化私有码"结构判定（不改变解码行为）
+        if stylized and not res.hits:
+            ts = time.perf_counter()
+            try:
+                from .stylized import classify
+                info = classify(color, gray)
+                if info.kind != 'unknown':
+                    res.stylized = info.to_dict()
+            except Exception as e:
+                if _DBG:
+                    print(f'  [dbg] stylized 失败: {type(e).__name__}: {e}', file=sys.stderr)
+            res.stylized_elapsed = time.perf_counter() - ts
         res.elapsed = time.perf_counter() - t0
         res.cpu = time.process_time() - c0
         self.last_perf = res

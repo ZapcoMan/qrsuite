@@ -89,3 +89,6 @@ main a{color:var(--acc)}
   .val{font-size:13.5px}
   .hist{padding:12px}
 }
+/* 样式化私有码：几何参数行 */
+.dim{font-size:12px;color:var(--mut);margin-top:4px}
+.res.stylized{border-left-color:var(--warn)}

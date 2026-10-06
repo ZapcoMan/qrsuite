@@ -59,6 +59,8 @@ CI 侧（`.github/workflows/windows.yml`）也支持：配置 `WINDOWS_CERT_PFX_
 ## ✨ 特性
 
 > 📚 文档：[使用手册 MANUAL.md](MANUAL.md) · [网页版手册](docs/manual.html) · [变更记录 CHANGELOG.md](CHANGELOG.md)
+>
+> 🧩 样式化私有码（微信小程序码/赞赏码、抖音主页码）的识别能力与调研结论：见 **[HANDOFF-stylized.md](HANDOFF-stylized.md)**
 
 | | |
 |---|---|
@@ -71,6 +73,7 @@ CI 侧（`.github/workflows/windows.yml`）也支持：配置 `WINDOWS_CERT_PFX_
 | **浏览器内解码** | 图片不上传服务器；Worker 后台线程解码，界面不卡顿 |
 | **可选本机增强** | 静态页检测到本地 Python 服务时，自动启用 OpenCV / zbar / bardecoder 等额外引擎 |
 | **隐私** | 无埋点、无网络请求（除你主动输入的图片 URL） |
+| **私有码结构判定** | 微信小程序码/赞赏码、抖音主页码等**平台私有**异形码：解不出内容，但会判定它是哪一家的码并提示用对应 App 扫（见 `qrsuite/stylized.py`） |
 
 ---
 
@@ -151,6 +154,7 @@ qrsuite-v2/
 │  ├─ core.py               #   引擎注册 + 级联/早退策略 + 统计
 │  ├─ cli.py                #   统一命令行入口（scan / serve / fetch-models）
 │  ├─ web.py                #   本地 HTTP 服务（含结果缓存）
+│  ├─ stylized.py           #   样式化私有码结构识别（微信小程序码/赞赏码、抖音主页码）
 │  └─ models.py             #   WeChatQRCode 模型下载（多镜像回退）
 ├─ docs/                    # ← GitHub Pages 站点根目录
 │  ├─ index.html            #   单页 UI（拖拽 / 粘贴 / 历史 / 导出）
@@ -161,12 +165,44 @@ qrsuite-v2/
 │  └─ vendor/               #   jsQR.js + zxing.min.js（本地化，含各自 LICENSE）
 ├─ tests/
 │  ├─ bench.py              # v1 vs v2 基准对比
-│  └─ smoke_test.py         # 冒烟测试（引擎可用性 + 端到端解码）
+│  ├─ smoke_test.py         # 冒烟测试（引擎可用性 + 端到端解码）
+│  └─ test_stylized.py      # 私有码结构判定回归（判定 + 几何精度 + 性能预算）
 ├─ .github/workflows/pages.yml
 ├─ requirements.txt
 ├─ run.bat                  # Windows 一键入口（网页版 / 命令行 / 模型下载）
 └─ LICENSE · THIRD_PARTY_NOTICES.md
 ```
+
+---
+
+## 🧩 解不出来的那类码（重要）
+
+微信小程序码（菊花码/太阳码）、微信赞赏码、抖音主页码，以及各类"圆点/环形"样式化码，
+**都是平台私有的编码方案**：协议未公开、无任何公开实现，且官方明确"只有自家 App 能解"。
+本项目的实测结论（`tools/NOTES-stylized-codes.md`）：
+
+- 4 个解码器 × 18 种预处理，对这类码**全部 0 命中**（连"检测到码"都做不到）；
+- 即便解出来也没有额外收益：实测抖音客户端扫自家主页码，解出的 payload 是
+  `snssdk1128://user/profile` —— 一条"打开某用户主页"的**明文深链**，不含路径/参数/票据；
+- 抓包路线同样不通：抖音走自研 TTNet/Cronet 在 native 层直连，实测 `is_proxy=0`，绕过系统代理与 VPN。
+
+因此本项目**不做**这类码的私有协议解码（涉及 ToS 与法律风险），而是：
+
+> 全部引擎失败后，用 `qrsuite/stylized.py` 判定**这是哪一家的码**并给出准确提示，
+> 例如"这是抖音主页码，请打开抖音 App「扫一扫」识别"。
+
+命令行默认开启，可用 `--no-stylized` 关闭：
+
+```powershell
+python -m qrsuite 某张抖音码.jpg
+#   ✗ 未解码（7 阶段 / 21 次引擎调用 / 1.04s）
+#   ⓘ 结构判定: 抖音主页码（置信度 0.88）
+#      定位点 4 个 · 圆心 (632.0, 680.8) · 约 126 线
+#      这是抖音主页码（平台私有格式，无法离线解出内容）。请打开抖音 App「扫一扫」识别。
+```
+
+**已知限制**：普通二维码的三个定位符本来就构成等腰直角三角形，纯几何无法与微信牛眼区分，
+故带噪 QR 可能被误判为微信族；实际管线中这类图会被标准引擎先解出，不会走到这一步。
 
 ---
 

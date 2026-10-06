@@ -5,6 +5,8 @@ Python 部分：本地高精度解码（zxing-cpp / OpenCV / zbar / WeChatQRCode
 Web 部分：docs/ 目录是纯前端静态站点，可直接部署到 GitHub Pages（浏览器内解码，无需后端）
 """
 from .core import Decoder, Result, Hit, MODES
+from .stylized import StylizedInfo, classify as classify_stylized
 
-__version__ = '2.0.3'
-__all__ = ['Decoder', 'Result', 'Hit', 'MODES', '__version__']
+__version__ = '2.1.0'
+__all__ = ['Decoder', 'Result', 'Hit', 'MODES',
+           'StylizedInfo', 'classify_stylized', '__version__']

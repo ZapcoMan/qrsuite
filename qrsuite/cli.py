@@ -44,19 +44,35 @@ def cmd_scan(a, dec: Decoder):
     print(f'{BANNER}\n引擎: {", ".join(dec.available_engines())} | 模式: {a.mode}'
           f'{" | 验证模式" if a.verify else ""} | 目标: {len(items)} 个')
     allres, t0, cpu0 = [], time.perf_counter(), time.process_time()
+    stylized_seen = 0
     for i, item in enumerate(items, 1):
         print(f'[{i}/{len(items)}] {item}')
         try:
             if re.match(r'^https?://', item):
-                r = dec.decode_bytes(_fetch(item), a.mode, a.verify, a.max_side)
+                r = dec.decode_bytes(_fetch(item), a.mode, a.verify, a.max_side, a.stylized)
             else:
-                r = dec.decode_path(item, a.mode, a.verify, a.max_side)
+                r = dec.decode_path(item, a.mode, a.verify, a.max_side, a.stylized)
         except Exception as e:
             print(f'  ERROR 无法获取: {e}', file=sys.stderr); continue
         if r.error:
             print(f'  ERROR {r.error}', file=sys.stderr); continue
         if not r.hits:
             print(f'  ✗ 未解码（{r.stages_tried} 阶段 / {r.engine_runs} 次引擎调用 / {r.elapsed:.2f}s）')
+            if r.stylized:
+                stylized_seen += 1
+                st = r.stylized
+                print(f'  ⓘ 结构判定: {st["label"]}（置信度 {st["confidence"]:.2f}）')
+                g = st.get('geometry') or {}
+                bits = []
+                if 'n_eyes' in g: bits.append(f'定位点 {g["n_eyes"]} 个')
+                if 'center' in g: bits.append(f'圆心 {tuple(g["center"])}')
+                if 'est_lines' in g: bits.append(f'约 {g["est_lines"]:.0f} 线')
+                if g.get('angular_div'): bits.append(f'角向分度 {g["angular_div"]["div"]} 格/圈')
+                if bits:
+                    print(f'     {" · ".join(bits)}')
+                print(f'     {st["hint"]}')
+                allres.append(dict(source=item, text=None, format=st['label'],
+                                   stylized=st))
         for h in r.hits:
             print(f'  ✓ [{h.format}] {h.text}')
             print(f'     引擎: {", ".join(sorted(h.engines))} | 生效变体: {", ".join(sorted(h.variants))}')
@@ -64,15 +80,19 @@ def cmd_scan(a, dec: Decoder):
                                engines=sorted(h.engines), variants=sorted(h.variants)))
         if a.verbose:
             print(f'     阶段 {r.stages_tried} / 引擎调用 {r.engine_runs} / 用时 {r.elapsed:.3f}s / CPU {r.cpu:.3f}s'
-                  f'{" / 早退" if r.stopped_early else ""}')
+                  f'{" / 早退" if r.stopped_early else ""}'
+                  f'{f" / 结构判定 {r.stylized_elapsed*1000:.0f}ms" if r.stylized else ""}')
     dt, dcpu = time.perf_counter() - t0, time.process_time() - cpu0
     print('-' * 62)
-    print(f'完成: {len(items)} 个输入, 解出 {len(allres)} 条, 墙钟 {dt:.2f}s, CPU {dcpu:.2f}s'
+    decoded = sum(1 for x in allres if x.get('text'))
+    print(f'完成: {len(items)} 个输入, 解出 {decoded} 条'
+          f'{f", 结构判定 {stylized_seen} 条（私有码，需用对应 App 扫）" if stylized_seen else ""}'
+          f', 墙钟 {dt:.2f}s, CPU {dcpu:.2f}s'
           f'{f", 平均 {dt/len(items):.3f}s/张" if items else ""}')
     if a.json:
         json.dump(allres, open(a.json, 'w', encoding='utf-8'), ensure_ascii=False, indent=2)
         print(f'结果已写入 {a.json}')
-    return 0 if allres else 1
+    return 0 if decoded else 1
 
 
 def cmd_serve(a, dec: Decoder):
@@ -91,6 +111,10 @@ def main(argv=None):
     ap.add_argument('--mode', choices=list(MODES), default='balanced',
                     help='fast=只试2阶段, balanced=默认, deep=全阶段全引擎')
     ap.add_argument('--verify', action='store_true', help='需 ≥2 引擎一致才停（降低误读，稍慢）')
+    ap.add_argument('--stylized', dest='stylized', action='store_true', default=True,
+                    help='全部引擎失败时，附加"样式化私有码"结构判定（默认开）')
+    ap.add_argument('--no-stylized', dest='stylized', action='store_false',
+                    help='关闭结构判定（不跑 stylized 模块，纯解码）')
     ap.add_argument('--dir', action='store_true', help='参数按目录递归')
     ap.add_argument('--json', metavar='FILE', help='结果写入 JSON')
     ap.add_argument('--engines', help='限定引擎, 逗号分隔: ' + ','.join(['zxing', 'cv2', 'zbar', 'wechat', 'original']))

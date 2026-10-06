@@ -220,6 +220,26 @@ function render(card, res, total, file) {
   if (!res.hits.length) {
     meta.className = 'meta err';
     meta.textContent = T('meta.notDecoded', { w: res.width, h: res.height, stages: res.stages, ms: (total * 1000).toFixed(0), tag: tag });
+    // 后端附带的"样式化私有码"结构判定（微信小程序码/赞赏码、抖音主页码）：
+    // 这类码是平台私有格式，无法离线解出内容，只能告诉用户用对应 App 扫。
+    const st = res.stylized;
+    if (st && st.label) {
+      const g = st.geometry || {};
+      const bits = [];
+      if (g.n_eyes) bits.push(T('stylized.eyes', { n: g.n_eyes }));
+      if (g.center) bits.push(T('stylized.center', { x: g.center[0], y: g.center[1] }));
+      if (g.est_lines) bits.push(T('stylized.lines', { n: Math.round(g.est_lines) }));
+      if (g.angular_div && g.angular_div.div) bits.push(T('stylized.div', { n: g.angular_div.div }));
+      const d = document.createElement('div');
+      d.className = 'res stylized';
+      d.innerHTML = `<div><span class="badge f"></span><span class="badge g"></span></div>` +
+        `<div class="val"></div>` + (bits.length ? `<div class="dim"></div>` : '');
+      d.querySelector('.badge.f').textContent = st.label;
+      d.querySelector('.badge.g').textContent = (st.confidence * 100).toFixed(0) + '%';
+      d.querySelector('.val').textContent = st.hint || '';
+      if (bits.length) d.querySelector('.dim').textContent = bits.join(' · ');
+      body.appendChild(d);
+    }
     return;
   }
   stat.n++; stat.ok++; stat.ms += total * 1000; bumpStats();

@@ -62,6 +62,11 @@
       'tag.backend': ' · 本机增强',
       'tag.mainThread': ' · 主线程',
       'meta.notDecoded': '❌ 未解码 · {w}×{h} · {stages} 阶段 · {ms}ms{tag}',
+  // 样式化私有码（微信小程序码/赞赏码、抖音主页码）——结构识别，不解内容
+  'stylized.eyes': '定位点 {n} 个',
+  'stylized.center': '圆心 ({x}, {y})',
+  'stylized.lines': '约 {n} 线',
+  'stylized.div': '角向分度 {n} 格/圈',
       'meta.decoded': '{w}×{h} · 解出 {n} 条 · {ms}ms · {stages} 阶段{early}{tag}',
       'meta.early': ' · 早退',
       'btn.copy': '复制',
@@ -146,6 +151,11 @@
       'tag.backend': ' · local boost',
       'tag.mainThread': ' · main thread',
       'meta.notDecoded': '❌ Not decoded · {w}×{h} · {stages} stages · {ms}ms{tag}',
+  // Stylized proprietary codes (WeChat mini-program/reward, Douyin profile) — structure only
+  'stylized.eyes': '{n} finders',
+  'stylized.center': 'center ({x}, {y})',
+  'stylized.lines': '~{n} lines',
+  'stylized.div': '{n} cells/rev',
       'meta.decoded': '{w}×{h} · {n} result(s) · {ms}ms · {stages} stages{early}{tag}',
       'meta.early': ' · early exit',
       'btn.copy': 'Copy',

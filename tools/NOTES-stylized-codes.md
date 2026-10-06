@@ -44,3 +44,46 @@
 - 产品化处理：解码失败时给出**准确提示**（见 Android `stylized_code_hint` 文案），
   引导用户使用对应 App 的"扫一扫"。
 """
+
+---
+
+## 补充实测（2026-10-06 二次调研，本轮新增）
+
+### 1. payload 是明文语义，不是加密票据
+在 Pixel 5a 上装**官方抖音 40.0.0**（md5 与豌豆荚公布值一致、签名 `CN=Aweme Douyin, O=ByteDance`），
+用 `adb shell am start -d "snssdk1128://aweme/scan"` 拉起扫码页扫抖音主页码，
+扫到瞬间的系统层记录：
+
+```
+14:37:07.179 I/ActivityTaskManager: START u0
+   { dat=snssdk1128://user/profile pkg=com.ss.android.ugc.aweme
+     cmp=com.ss.android.ugc.aweme/.profile.ui.UserProfileActivity (has extras) }
+```
+
+随后 `uiautomator dump` 读出界面文本：`无神论最大受害者 / 抖音号：93989639689`，
+与码上印的内容一致。
+
+**结论**：这类码的 payload 就是「打开谁的页面」这一条**明文深链**，
+不含路径/参数/票据 —— 所以"解出来能多拿什么"的答案是：**什么都多拿不到**。
+
+### 2. 抓包路线原理性不通
+抖音运行日志里抓到自研网络栈的原始错误对象：
+
+```
+CronetIOException: net::ERR_TTNET_APP_TIMED_OUT, ..., is_proxy=0
+```
+
+`is_proxy=0` = **native 层直连，绕过系统代理与 VPN**。
+（同一份日志还证实：强制更新是服务端按请求里的 `version_name/version_code` 判定，
+所以改本地 APK 版本号无效。）
+
+### 3. 因此本项目新增的能力边界
+不做解码，但做**结构判定**：`qrsuite/stylized.py` 判定"这是哪一家的码"+ 几何参数，
+并在 CLI / 网页端给出面向用户的提示。实测：
+
+| 样本 | 判定 | 关键指标 |
+|---|---|---|
+| `real_douyin.jpg` | 抖音主页码（0.88） | 正方形误差 0.0051、质心≈盘心 |
+| `real_wechat_reward.jpg` | 微信赞赏码（1.00） | 圆心 (575.8,419.8)、等腰直角误差 0.0003、角向主分度 36.0 格/圈 |
+
+回归：`python tests/test_stylized.py`（6 项断言，含 <0.6s 性能预算）。
