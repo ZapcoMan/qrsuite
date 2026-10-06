@@ -8,6 +8,9 @@
 const $ = s => document.querySelector(s);
 const listEl = $('#list'), dropEl = $('#drop'), fileEl = $('#file'), statEl = $('#stats'), envEl = $('#env');
 
+/* 多语言：i18n.js 先于本文件加载；缺失时退化为原中文（不影响功能） */
+const T = (k, v) => (window.QRi18n ? window.QRi18n.t(k, v) : k);
+
 /* 内置自检二维码：data URI 形式，file:// 下也不会污染 canvas，可安全 getImageData */
 const SELFTEST_QR = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAK4AAACuCAAAAACKZ2kyAAACEklEQVR4nO3cwY6jMBAA0XJp/v+XvYe5IEVEJjvRTJm8EwLHiVqiaRqcMSmRFEmRFEmRFEmRFEmRFEmRFEmRFEmRFEmRFEmRFEmRFEmRlK+zA2N5inkYf9w+Ott/Zu4RXUmRFEmRPTLDt+f9yfF05HwYc3XOfHQlRVIkRXbKDCyf3ev1AC9ljGR0JUVSJEX2ywwr5nItcaPoSoqkSIrcMzM85oTxhvwQi66kSIqkyH6ZYS6MuZoHJjeIrqRIiqTITplhXJzu7DnF/I85w9GVFEmRFEkZP9sHeF+HIRldSZEUSZE9MsN4et0/jmGhKpgnM69/VzK6kiIpkiI71Qxj4R5hvU4YD3uuzhCLrqRIiqTITjUDC9f39TchX8sG4ehKiqRIiuzRgZyH8/fsLF5553lePPq5m/g9kiIpsutTy3Gx/zBPto9z8nR/PrqSIimSIvd8NjGW+4rj4bOfu4m/QVIkRe651vJopZbgpA7ZKrqSIimSIndeazlOPjUfxp/N9rmb+D2SIilyz7WWr3UU52HMhtGVFEmRFEn5+tnpzvoJ42T7e+Snz/A3SIqkyD0zw7j43uNrNUksupIiKZIi91xrOZ92FOfJ/rNOxSbRlRRJkRS551rLcfG/nsbT96k2ia6kSIqkyJ3XWr6bpEiKpEiKpEiKpEiKpEiKpEiKpEiKpEiKpEiKpEiKpEiKv/0DrvkHvhNbb+6MR/YAAAAASUVORK5CYII=';
 const MODES = { fast: 2, balanced: 7, deep: 99 };
@@ -25,11 +28,11 @@ function banner(msg, kind = 'warn') {
 }
 function envInfo() {
   const proto = location.protocol;
-  const parts = [`协议 <code>${proto}</code>`];
-  parts.push(workerPool ? `Worker <b class="ok">可用</b>（${workerPool.length} 个）` : `Worker <b class="warn">不可用 → 主线程解码</b>`);
-  parts.push(`引擎 <code>${(window.QRCascade ? 'jsQR+ZXing-js' : '未加载')}</code>`);
-  if (proto === 'file:') parts.push(`<span class="warn">file:// 下建议改用本地服务：<code>python -m qrsuite --serve</code></span>`);
-  if (backendOK) parts.push(`本机增强 <b class="ok">可用</b>`);
+  const parts = [T('env.proto', { p: proto })];
+  parts.push(workerPool ? T('env.workerOk', { n: workerPool.length }) : T('env.workerNo'));
+  parts.push(T('env.engines', { e: (window.QRCascade ? 'jsQR+ZXing-js' : T('env.notLoaded')) }));
+  if (proto === 'file:') parts.push(T('env.fileHint'));
+  if (backendOK) parts.push(T('env.backendOk'));
   return parts.join(' · ');
 }
 function refreshEnv() { if (envEl) envEl.innerHTML = envInfo(); }
@@ -37,8 +40,8 @@ function refreshEnv() { if (envEl) envEl.innerHTML = envInfo(); }
 /* ============================ 1. 先绑定 UI（绝不依赖后续初始化） ============================ */
 function handleFiles(files) {
   const imgs = [...files].filter(f => (f.type && f.type.startsWith('image/')) || /\.(png|jpe?g|gif|bmp|webp|tiff?)$/i.test(f.name || ''));
-  if (!imgs.length) { banner('没有检测到图片文件，请拖入 png / jpg / gif / bmp / webp', 'err'); return; }
-  banner(`已接收 ${imgs.length} 张图片，开始解码…`, 'ok');
+  if (!imgs.length) { banner(T('err.noImages'), 'err'); return; }
+  banner(T('msg.received', { n: imgs.length }), 'ok');
   imgs.forEach(decodeFile);
 }
 
@@ -83,8 +86,8 @@ function bindUI() {
       [new Date(r.t).toLocaleString(), r.name, r.format, r.text, (r.engines || []).join('|')]));
     download('qrsuite-history.csv', '\ufeff' + rows.map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n'));
   });
-  $('#clear').addEventListener('click', () => { if (confirm('清空本机历史记录？')) { localStorage.removeItem(HKEY); renderHistory(); } });
-  window.addEventListener('error', e => banner('脚本错误：' + (e.message || e.error), 'err'));
+  $('#clear').addEventListener('click', () => { if (confirm(T('hist.confirmClear'))) { localStorage.removeItem(HKEY); renderHistory(); } });
+  window.addEventListener('error', e => banner(T('err.script', { msg: (e.message || e.error) }), 'err'));
 }
 
 /* ============================ 2. 解码执行器（Worker 优先，主线程兜底） ============================ */
@@ -92,14 +95,14 @@ const pending = new Map();
 let seq = 0, rr = 0;
 
 function initWorkers() {
-  if (typeof Worker === 'undefined') throw new Error('浏览器不支持 Web Worker');
-  if (location.protocol === 'file:') throw new Error("file:// 下浏览器禁止创建 Worker（origin 'null'）");
+  if (typeof Worker === 'undefined') throw new Error(T('err.noWorker'));
+  if (location.protocol === 'file:') throw new Error(T('err.fileWorker'));
   const n = Math.max(1, Math.min(4, (navigator.hardwareConcurrency || 4) - 1));
   const pool = [];
   for (let i = 0; i < n; i++) {
     const w = new Worker('decode.worker.js');
     w.onmessage = e => { const t = pending.get(e.data.id); if (t) { pending.delete(e.data.id); t(e.data); } };
-    w.onerror = e => banner('Worker 出错：' + (e.message || ''), 'err');
+    w.onerror = e => banner(T('err.worker', { msg: (e.message || '') }), 'err');
     pool.push(w);
   }
   return pool;
@@ -109,14 +112,14 @@ function decodeViaWorker(rgba, w, h, mode, verify) {
   return new Promise((resolve, reject) => {
     const id = ++seq;
     const worker = workerPool[rr++ % workerPool.length];
-    const timer = setTimeout(() => { pending.delete(id); reject(new Error('Worker 超时')); }, 60000);
+    const timer = setTimeout(() => { pending.delete(id); reject(new Error(T('err.workerTimeout'))); }, 60000);
     pending.set(id, r => { clearTimeout(timer); r.ok ? resolve(r) : reject(new Error(r.error)); });
     worker.postMessage({ id, buf: rgba.buffer.slice(0), w, h, mode, verify });
   });
 }
 
 function decodeViaMainThread(rgba, w, h, mode, verify) {
-  if (!window.QRCascade) return Promise.reject(new Error('decode.js 未加载'));
+  if (!window.QRCascade) return Promise.reject(new Error(T('err.cascadeMissing')));
   return new Promise((resolve, reject) => {
     setTimeout(() => {
       try { const r = window.QRCascade.decode(new Uint8ClampedArray(rgba.buffer), w, h, mode, verify); r.ok = true; resolve(r); }
@@ -134,7 +137,7 @@ async function fileToRGBA(file) {
   if (!bitmap) {
     img = await new Promise((res, rej) => {
       const i = new Image();
-      i.onload = () => res(i); i.onerror = () => rej(new Error('图片解码失败（格式不支持？）'));
+      i.onload = () => res(i); i.onerror = () => rej(new Error(T('err.imgDecode')));
       i.src = URL.createObjectURL(file);
     });
   }
@@ -178,7 +181,7 @@ async function decodeFile(file) {
   } catch (err) {
     card.querySelector('.meta').className = 'meta err';
     card.querySelector('.meta').textContent = '❌ ' + (err && err.message || err);
-    banner('解码失败：' + (err && err.message || err), 'err');
+    banner(T('err.decode', { msg: (err && err.message || err) }), 'err');
   }
 }
 
@@ -202,7 +205,8 @@ function makeCard(file) {
   const el = document.createElement('div');
   el.className = 'card';
   el.innerHTML = `<img class="thumb" alt=""><div class="cnt">
-      <div class="fname"></div><div class="meta spin">解码中…</div><div class="body"></div></div>`;
+      <div class="fname"></div><div class="meta spin"></div><div class="body"></div></div>`;
+  el.querySelector('.meta').textContent = T('msg.decoding');
   el.querySelector('.fname').textContent = file.name || 'clipboard.png';
   el.querySelector('.thumb').src = URL.createObjectURL(file);
   listEl.prepend(el);
@@ -211,25 +215,30 @@ function makeCard(file) {
 
 function render(card, res, total, file) {
   const meta = card.querySelector('.meta'), body = card.querySelector('.body');
-  const tag = (res.backend ? ' · 本机增强' : '') + (res.viaWorker === false ? ' · 主线程' : '');
-  if (!res.ok) { meta.className = 'meta err'; meta.textContent = '❌ ' + (res.error || '解码失败'); return; }
+  const tag = (res.backend ? T('tag.backend') : '') + (res.viaWorker === false ? T('tag.mainThread') : '');
+  if (!res.ok) { meta.className = 'meta err'; meta.textContent = '❌ ' + (res.error || T('err.decodeShort')); return; }
   if (!res.hits.length) {
     meta.className = 'meta err';
-    meta.textContent = `❌ 未解码 · ${res.width}×${res.height} · ${res.stages} 阶段 · ${(total * 1000).toFixed(0)}ms${tag}`;
+    meta.textContent = T('meta.notDecoded', { w: res.width, h: res.height, stages: res.stages, ms: (total * 1000).toFixed(0), tag: tag });
     return;
   }
   stat.n++; stat.ok++; stat.ms += total * 1000; bumpStats();
-  meta.textContent = `${res.width}×${res.height} · 解出 ${res.hits.length} 条 · ${(total * 1000).toFixed(0)}ms · ${res.stages} 阶段${res.early ? ' · 早退' : ''}${tag}`;
+  meta.textContent = T('meta.decoded', {
+    w: res.width, h: res.height, n: res.hits.length, ms: (total * 1000).toFixed(0),
+    stages: res.stages, early: res.early ? T('meta.early') : '', tag: tag
+  });
   res.hits.forEach(h => {
     const d = document.createElement('div');
     d.className = 'res';
     d.innerHTML = `<div><span class="badge f"></span>${h.engines.map(e => `<span class="badge g">${e}</span>`).join('')}` +
       `${h.variants.slice(0, 4).map(v => `<span class="badge">${v}</span>`).join('')}</div>
-      <div class="val"></div><div class="row"><button>复制</button><button>打开链接</button></div>`;
+      <div class="val"></div><div class="row"><button class="b-copy"></button><button class="b-open"></button></div>`;
     d.querySelector('.badge.f').textContent = h.format;
     d.querySelector('.val').textContent = h.text;
     const [b1, b2] = d.querySelectorAll('button');
-    b1.onclick = () => { navigator.clipboard.writeText(h.text).catch(() => { }); b1.textContent = '已复制'; setTimeout(() => b1.textContent = '复制', 1200); };
+    b1.textContent = T('btn.copy');
+    b2.textContent = T('btn.open');
+    b1.onclick = () => { navigator.clipboard.writeText(h.text).catch(() => { }); b1.textContent = T('btn.copied'); setTimeout(() => b1.textContent = T('btn.copy'), 1200); };
     b2.onclick = () => window.open(h.text, '_blank');
     body.appendChild(d);
     history_add({ name: file.name || 'clipboard', format: h.format, text: h.text, engines: h.engines, file: file.size });
@@ -245,11 +254,14 @@ function history_add(rec) {
   renderHistory();
 }
 function renderHistory() {
-  const h = hist(); $('#hcount').textContent = h.length;
+  const h = hist();
+  const hint = $('#hhint');
+  if (hint) hint.textContent = T('hist.hint', { n: h.length });
+  const old = $('#hcount'); if (old) old.textContent = h.length;   // 兼容旧标记
   $('#hlist').innerHTML = h.slice(0, 30).map(r =>
     `<div class="hrow"><span class="badge f">${r.format}</span><span class="hname">${esc(r.name)}</span>
-     <span class="hval" title="点击复制">${esc(r.text)}</span>
-     <button data-copy="${encodeURIComponent(r.text)}">复制</button></div>`).join('');
+     <span class="hval" title="${esc(T('hist.copyTitle'))}">${esc(r.text)}</span>
+     <button data-copy="${encodeURIComponent(r.text)}">${esc(T('btn.copy'))}</button></div>`).join('');
   $('#hlist').querySelectorAll('button[data-copy]').forEach(b => b.onclick = () => {
     navigator.clipboard.writeText(decodeURIComponent(b.dataset.copy)).catch(() => { }); b.textContent = '✓';
   });
@@ -264,27 +276,27 @@ function download(name, text) {
 /* ============================ 7. 统计 ============================ */
 const stat = { n: 0, ok: 0, ms: 0 };
 function bumpStats() {
-  statEl.textContent = stat.n ? `本次已处理 ${stat.n} 张 · 成功 ${stat.ok} · 平均 ${(stat.ms / stat.n).toFixed(0)}ms` : '';
+  statEl.textContent = stat.n ? T('stat.summary', { n: stat.n, ok: stat.ok, ms: (stat.ms / stat.n).toFixed(0) }) : '';
 }
 
 /* ============================ 8. 自检（内置二维码图 → 像素 → 解码，全链路） ============================ */
 async function runSelfTest(verbose) {
   const out = [];
   const ok = (name, cond, extra) => { out.push(`${cond ? '✓' : '✗'} ${name}${extra ? ' — ' + extra : ''}`); return cond; };
-  ok('页面协议', true, location.protocol);
-  ok('decode.js 已加载', !!window.QRCascade, window.QRCascade ? 'QRCascade.decode 可用' : '缺失');
-  ok('拖拽事件已绑定', ready, ready ? 'drop/paste/click 已就绪' : '未绑定（脚本中断）');
+  ok(T('st.protocol'), true, location.protocol);
+  ok(T('st.decodeJs'), !!window.QRCascade, window.QRCascade ? T('st.decodeJsOk') : T('st.missing'));
+  ok(T('st.dragBound'), ready, ready ? T('st.dragOk') : T('st.dragNo'));
   const isFile = location.protocol === 'file:';
-  ok('Worker 可用', !!workerPool || isFile,
-     workerPool ? `${workerPool.length} 个` : (isFile ? 'file:// 下浏览器禁止 Worker，已自动回退主线程（正常）' : '不可用，已回退主线程'));
-  ok('离线缓存(SW)', 'serviceWorker' in navigator, location.protocol.startsWith('http') ? '已注册' : 'file:// 下不适用');
+  ok(T('st.worker'), !!workerPool || isFile,
+     workerPool ? T('st.workerN', { n: workerPool.length }) : (isFile ? T('st.workerFile') : T('st.workerFallback')));
+  ok(T('st.sw'), 'serviceWorker' in navigator, location.protocol.startsWith('http') ? T('st.swOk') : T('st.swNa'));
 
   let text = null, via = '';
   try {
     // 用 <img> 加载（file:// 下 fetch 本地文件被浏览器禁止，<img> 可以）
     const img = await new Promise((res, rej) => {
       const i = new Image();
-      i.onload = () => res(i); i.onerror = () => rej(new Error('内置测试图加载失败'));
+      i.onload = () => res(i); i.onerror = () => rej(new Error(T('err.selfTestImg')));
       i.src = SELFTEST_QR;
     });
     let ctx;
@@ -297,14 +309,17 @@ async function runSelfTest(verbose) {
                          : await decodeViaMainThread(rgba.data, img.width, img.height, 'fast', false);
     const ms = (performance.now() - t0).toFixed(0);
     text = r.hits.length ? r.hits[0].text : null;
-    via = `${r.stages} 阶段 / ${ms}ms / ${workerPool ? 'Worker' : '主线程'}`;
-    ok('图片→解码 全链路', text === 'QRSUITE-SELFTEST-OK', text ? `得到「${text}」，${via}` : '未解出');
-  } catch (e) { ok('图片→解码 全链路', false, String(e)); }
+    via = `${r.stages} / ${ms}ms / ${workerPool ? 'Worker' : 'main'}`;
+    ok(T('st.e2e'), text === 'QRSUITE-SELFTEST-OK', text ? T('st.e2eOk', { text: text, via: via }) : T('st.e2eNo'));
+  } catch (e) { ok(T('st.e2e'), false, String(e)); }
 
   const pass = out.every(l => l.startsWith('✓'));
-  const report = `【QRSuite 自检 ${pass ? '通过' : '未通过'}】` + out.join('；');
+  const report = T('selftest.title', { result: pass ? T('selftest.pass') : T('selftest.fail') }) + out.join('; ');
   statEl.textContent = report;
-  banner(`自检${pass ? '<b class="ok">通过</b>' : '<b class="err">未通过</b>'}：${out.join('；')}`, pass ? 'ok' : 'err');
+  banner(T('selftest.banner', {
+    result: pass ? '<b class="ok">' + T('selftest.pass') + '</b>' : '<b class="err">' + T('selftest.fail') + '</b>',
+    detail: out.join('; ')
+  }), pass ? 'ok' : 'err');
   if (verbose) console.log(report);
   return pass;
 }
@@ -315,7 +330,7 @@ try {
   workerPool = initWorkers();
 } catch (e) {
   workerPool = null;
-  banner(`后台线程不可用（${e.message}），已切换为主线程解码；功能不受影响。`, 'warn');
+  banner(T('msg.workerFallback', { msg: e.message }), 'warn');
 }
 refreshEnv();
 renderHistory();
@@ -341,3 +356,15 @@ if ('serviceWorker' in navigator && location.protocol.indexOf('http') === 0) {
   navigator.serviceWorker.register('sw.js').catch(() => { });
 }
 window.QRS = { runSelfTest, decodeFile, handleFiles, get workerOk() { return !!workerPool; } };
+
+/* 切换语言后重刷动态文案（静态文案由 i18n.js 的 apply 负责） */
+window.onLangChange = function () {
+  refreshEnv();
+  renderHistory();
+  bumpStats();
+  // 结果卡片里的按钮文案
+  document.querySelectorAll('#list .res').forEach(card => {
+    const bs = card.querySelectorAll('button');
+    if (bs.length >= 2) { bs[0].textContent = T('btn.copy'); bs[1].textContent = T('btn.open'); }
+  });
+};

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- English strings. The default values/strings.xml is Chinese; this file is used
+     when the device language is any non-Chinese locale. -->
+<resources>
+    <string name="app_name">QRSuite</string>
+    <string name="scan_hint">Point the camera at a QR or barcode</string>
+    <string name="permission_needed">Camera permission is required to scan</string>
+    <string name="permission_rationale">The camera feed is analyzed on this device only. Nothing is recorded or uploaded.</string>
+    <string name="grant">Grant camera access</string>
+    <string name="open_settings">Open system settings</string>
+    <string name="pick_image">Pick an image</string>
+    <string name="torch">Flashlight</string>
+    <string name="history">History</string>
+    <string name="result_title">Result</string>
+    <string name="copy">Copy</string>
+    <string name="share">Share</string>
+    <string name="open">Open</string>
+    <string name="search">Search</string>
+    <string name="continue_scan">Keep scanning</string>
+    <string name="copied">Copied</string>
+    <string name="no_code_found">No barcode found — try another image</string>
+    <string name="history_empty">No history yet</string>
+    <string name="clear_history">Clear history</string>
+    <string name="cleared">History cleared</string>
+    <string name="detecting">Scanning…</string>
+    <string name="secondary_actions">More actions</string>
+    <string name="stylized_code_hint">No barcode found. If this is a Douyin profile code or a WeChat reward code, its dotted/ring modules are a proprietary format that general-purpose decoders cannot read — please scan it with the matching app.</string>
+</resources>

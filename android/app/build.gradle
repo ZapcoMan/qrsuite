@@ -8,25 +8,40 @@ def lp = rootProject.file('local.properties')
 if (lp.exists()) { localProps.load(new FileInputStream(lp)) }
 def sdkDir = localProps.getProperty('sdk.dir') ?: System.getenv('ANDROID_SDK_ROOT') ?: 'E:/学习/Android/sdk'
 
-// 发布签名：凭据放在仓库外（06-构建产物/android/signing.properties），不进版本库。
-// 找不到就退回 debug 签名，并在构建时明确警告，避免误发 debug 签名包。
+// 发布签名：优先用环境变量（CI 从 Secrets 注入），否则读仓库外的 signing.properties。
+// 两者都没有就退回 debug 签名并明确警告，避免误发 debug 签名包。
 def releaseSigning = null
-def signingCandidates = [
-        System.getenv('QRSUITE_SIGNING_PROPERTIES'),
-        'E:/学习/qcode/06-构建产物/android/signing.properties',
-        rootProject.file('signing.properties').absolutePath,
-]
-for (def path : signingCandidates) {
-    if (!path) continue
-    def f = new File(path)
-    if (f.exists()) {
-        def p = new Properties()
-        f.withInputStream { p.load(it) }
-        if (p.getProperty('storeFile')) {
-            releaseSigning = p
-            break
+if (System.getenv('QRSUITE_KEYSTORE')) {
+    // CI 路径：GitHub Actions 解码 keystore 后把路径与口令放进环境变量
+    releaseSigning = [
+            storeFile    : System.getenv('QRSUITE_KEYSTORE'),
+            storePassword: System.getenv('QRSUITE_STORE_PASSWORD'),
+            keyAlias     : System.getenv('QRSUITE_KEY_ALIAS'),
+            keyPassword  : System.getenv('QRSUITE_KEY_PASSWORD'),
+    ]
+} else {
+    def signingCandidates = [
+            System.getenv('QRSUITE_SIGNING_PROPERTIES'),
+            'E:/学习/qcode/06-构建产物/android/signing.properties',
+            rootProject.file('signing.properties').absolutePath,
+    ]
+    for (def path : signingCandidates) {
+        if (!path) continue
+        def f = new File(path)
+        if (f.exists()) {
+            def p = new Properties()
+            f.withInputStream { p.load(it) }
+            if (p.getProperty('storeFile')) {
+                releaseSigning = p
+                break
+            }
         }
     }
+}
+
+def signVal = { cfg, key ->
+    if (cfg instanceof Map) return cfg[key]
+    return cfg.getProperty(key)
 }
 
 android {
@@ -36,10 +51,10 @@ android {
     if (releaseSigning != null) {
         signingConfigs {
             release {
-                storeFile new File(releaseSigning.getProperty('storeFile'))
-                storePassword releaseSigning.getProperty('storePassword')
-                keyAlias releaseSigning.getProperty('keyAlias')
-                keyPassword releaseSigning.getProperty('keyPassword')
+                storeFile new File(signVal(releaseSigning, 'storeFile'))
+                storePassword signVal(releaseSigning, 'storePassword')
+                keyAlias signVal(releaseSigning, 'keyAlias')
+                keyPassword signVal(releaseSigning, 'keyPassword')
             }
         }
     }

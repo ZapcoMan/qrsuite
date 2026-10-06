@@ -1,7 +1,7 @@
 {
-  "name": "QRSuite · 多引擎二维码识别",
+  "name": "QRSuite · 多引擎二维码识别 / Multi-engine QR scanner",
   "short_name": "QRSuite",
-  "description": "浏览器内本地解码的二维码/条码识别：QR / MicroQR / DataMatrix / Aztec / PDF417 / 一维码。图片不上传，可离线。",
+  "description": "浏览器内本地解码的二维码/条码识别：QR / MicroQR / DataMatrix / Aztec / PDF417 / 一维码。图片不上传，可离线。Decode QR & barcodes locally in your browser — nothing is uploaded, works offline.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
