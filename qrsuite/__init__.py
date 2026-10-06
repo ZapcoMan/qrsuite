@@ -7,6 +7,6 @@ Web 部分：docs/ 目录是纯前端静态站点，可直接部署到 GitHub Pa
 from .core import Decoder, Result, Hit, MODES
 from .stylized import StylizedInfo, classify as classify_stylized
 
-__version__ = '2.1.0'
+__version__ = '2.1.1'
 __all__ = ['Decoder', 'Result', 'Hit', 'MODES',
            'StylizedInfo', 'classify_stylized', '__version__']

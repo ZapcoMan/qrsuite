@@ -222,8 +222,12 @@ function render(card, res, total, file) {
     meta.textContent = T('meta.notDecoded', { w: res.width, h: res.height, stages: res.stages, ms: (total * 1000).toFixed(0), tag: tag });
     // 后端附带的"样式化私有码"结构判定（微信小程序码/赞赏码、抖音主页码）：
     // 这类码是平台私有格式，无法离线解出内容，只能告诉用户用对应 App 扫。
+    //
+    // 注意：只在判定**可用**时才渲染。classify() 对绝大多数图返回 kind='unknown'
+    // （label 是"未识别的样式化码"、hint 为空），若不加这个条件，普通二维码解不出时
+    // 会多出一个"0% 置信度、无提示"的空块，纯属噪音。
     const st = res.stylized;
-    if (st && st.label) {
+    if (st && st.kind && st.kind !== 'unknown' && st.hint && st.confidence >= 0.5) {
       const g = st.geometry || {};
       const bits = [];
       if (g.n_eyes) bits.push(T('stylized.eyes', { n: g.n_eyes }));

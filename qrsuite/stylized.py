@@ -53,7 +53,6 @@ KIND_LABELS = {
     'douyin_profile':    '抖音主页码',
     'wechat_miniprogram': '微信小程序码',
     'wechat_reward':     '微信赞赏码',
-    'wechat_radial':     '微信样式化码',
     'unknown':           '未识别的样式化码',
 }
 
@@ -61,7 +60,6 @@ HINTS = {
     'douyin_profile': '这是抖音主页码（平台私有格式，无法离线解出内容）。请打开抖音 App「扫一扫」识别。',
     'wechat_miniprogram': '这是微信小程序码（平台私有格式，无法离线解出内容）。请用微信「扫一扫」识别。',
     'wechat_reward': '这是微信赞赏码（平台私有格式，且涉及支付，无法离线解出内容）。请用微信「扫一扫」识别。',
-    'wechat_radial': '这看起来是微信的样式化码（平台私有格式，无法离线解出内容）。请用微信「扫一扫」识别。',
     'unknown': '',
 }
 

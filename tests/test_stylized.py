@@ -19,7 +19,7 @@ REAL = os.path.join(os.path.dirname(ROOT), '02-测试用例', 'real')
 # (文件, 期望 kind, 允许的备选 kind)
 CASES = [
     ('real_douyin.jpg', 'douyin_profile', set()),
-    ('real_wechat_reward.jpg', 'wechat_reward', {'wechat_miniprogram', 'wechat_radial'}),
+    ('real_wechat_reward.jpg', 'wechat_reward', {'wechat_miniprogram'}),
 ]
 
 # 反例：这些**不是**样式化私有码，必须判为 unknown。
