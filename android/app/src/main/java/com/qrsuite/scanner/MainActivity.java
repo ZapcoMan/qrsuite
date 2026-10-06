@@ -7,11 +7,15 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.media.Image;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.util.Log;
@@ -48,8 +52,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.google.mlkit.vision.barcode.BarcodeScanner;
 import com.google.mlkit.vision.barcode.BarcodeScannerOptions;
 import com.google.mlkit.vision.barcode.BarcodeScanning;
-import com.google.mlkit.vision.barcode.common.Barcode;
-import com.google.mlkit.vision.common.InputImage;
+import com.google.mlkit.vision.barcode.common.Barcode;import com.google.mlkit.vision.common.InputImage;
 
 import java.nio.ByteBuffer;
 import java.text.SimpleDateFormat;
@@ -446,12 +449,14 @@ public class MainActivity extends AppCompatActivity {
         scanner.process(input)
                 .addOnSuccessListener(codes -> {
                     if (codes == null || codes.isEmpty()) {
-                        setScanning(true);
-                        // 提示里点明"样式化私有码"这一可能性：抖音主页码/微信赞赏码的模块是
-                        // 圆点圆环，通用解码器（含 ML Kit）结构上就匹配不上。
-                        // 注意：这里不做自动判定——实测样本不足以把"样式化码"与"模糊标准码"
-                        // 可靠分开（标准码圆度占比也可达 0.80），误报会误导用户，故只用措辞提示。
-                        Toast.makeText(this, R.string.stylized_code_hint, Toast.LENGTH_LONG).show();
+                        // 通用解码器（含 ML Kit）读不出来时，做一次**本机结构判定**：
+                        // 抖音主页码/微信小程序码/赞赏码是平台私有格式（圆点圆环、放射状），
+                        // 通用解码器结构上就匹配不上，只能识别"这是哪一家的码"并提示用对应 App。
+                        //
+                        // 判定几何与 Python 参考实现逐字对齐（见 StylizedDetector 类注释），
+                        // 已用 16 张样本做一致性回归：判定/置信度/定位点数/圆心全部一致。
+                        // 未识别出已知厂商时退回原来的通用措辞提示。
+                        detectStylizedThenHint(uri);
                         return;
                     }
                     for (Barcode b : codes) {
@@ -468,6 +473,57 @@ public class MainActivity extends AppCompatActivity {
                     setScanning(true);
                     Toast.makeText(this, "识别失败：" + e.getMessage(), Toast.LENGTH_LONG).show();
                 });
+    }
+
+    /**
+     * 通用解码失败后：在后台做本机结构判定，再按结果提示用哪个 App 扫。
+     *
+     * <p>放到后台线程是因为几何判定在真机上约需 100~400ms（含连通域与极坐标自相关），
+     * 在主线程做会卡顿；判定期间保持"识别中"状态。
+     */
+    private void detectStylizedThenHint(Uri uri) {
+        new Thread(() -> {
+            String kind = null;
+            try {
+                // 按原图尺寸解码：牛眼的细环在缩略图上会被打碎（Python 侧实测教训）
+                BitmapFactory.Options opt = new BitmapFactory.Options();
+                opt.inPreferredConfig = Bitmap.Config.ARGB_8888;
+                Bitmap bmp = BitmapFactory.decodeStream(
+                        getContentResolver().openInputStream(uri), null, opt);
+                if (bmp != null) {
+                    // 控制规模：超大图先缩到长边 1600，兼顾精度与耗时
+                    int bw = bmp.getWidth(), bh = bmp.getHeight();
+                    int side = Math.max(bw, bh);
+                    if (side > 1600) {
+                        double s = 1600.0 / side;
+                        Bitmap small = Bitmap.createScaledBitmap(
+                                bmp, Math.max(1, (int) (bw * s)), Math.max(1, (int) (bh * s)), true);
+                        if (small != bmp) { bmp.recycle(); bmp = small; }
+                    }
+                    int iw = bmp.getWidth(), ih = bmp.getHeight();
+                    int[] px = new int[iw * ih];
+                    // Android 的 Bitmap 没有桌面 BufferedImage 的 getRGB(...) 批量接口，
+                    // 对应方法是 getPixels(pixels, offset, stride, x, y, width, height)
+                    bmp.getPixels(px, 0, iw, 0, 0, iw, ih);
+                    bmp.recycle();
+                    StylizedDetector.Info info = new StylizedDetector(px, iw, ih).classify();
+                    kind = info.isActionable() ? info.kind : null;
+                    Log.i("QRSuite", "stylized 判定: " + info);
+                }
+            } catch (Throwable t) {
+                Log.w("QRSuite", "stylized 判定失败: " + t);
+            }
+            final String k = kind;
+            new Handler(Looper.getMainLooper()).post(() -> {
+                setScanning(true);
+                int res;
+                if (StylizedDetector.KIND_DOUYIN.equals(k)) res = R.string.stylized_douyin;
+                else if (StylizedDetector.KIND_WECHAT_MINIPROGRAM.equals(k)) res = R.string.stylized_wechat_mp;
+                else if (StylizedDetector.KIND_WECHAT_REWARD.equals(k)) res = R.string.stylized_wechat_reward;
+                else res = R.string.stylized_code_hint;   // 未识别出已知厂商：保留通用措辞
+                Toast.makeText(this, res, Toast.LENGTH_LONG).show();
+            });
+        }, "stylized-detect").start();
     }
 
 

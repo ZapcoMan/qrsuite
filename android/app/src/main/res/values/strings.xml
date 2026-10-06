@@ -18,6 +18,11 @@
     <string name="copied">已复制</string>
     <string name="no_code_found">没识别到条码，换张图试试</string>
     <string name="stylized_code_hint">没识别到条码。若这是抖音主页码或微信赞赏码，它的圆点圆环是私有样式，通用解码器读不出来，请用对应 App 扫一扫。</string>
+    <!-- 结构判定结果（本地几何判定，非云端）。这类码协议私有，只能识别是哪一家，无法解出内容。 -->
+    <string name="stylized_douyin">这是抖音主页码（私有格式，无法离线解出内容）。请打开抖音 App「扫一扫」识别。</string>
+    <string name="stylized_wechat_mp">这是微信小程序码（私有格式，无法离线解出内容）。请用微信「扫一扫」识别。</string>
+    <string name="stylized_wechat_reward">这是微信赞赏码（私有格式，且涉及支付，无法离线解出内容）。请用微信「扫一扫」识别。</string>
+    <string name="stylized_unknown">没识别到条码，也不像已知的私有样式码，换张更清晰的原图试试。</string>
     <string name="history_empty">还没有记录</string>
     <string name="clear_history">清空历史</string>
     <string name="cleared">历史已清空</string>

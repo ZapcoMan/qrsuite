@@ -190,8 +190,25 @@ _fit_tri_center(pts)        # 3 牛眼 = 矩形三角 → 圆心 = 另两角中�
 
 ## 八、如果继续做，建议的下一步
 
-1. **Android 侧接入**（未做）：需要在 Java/Kotlin 里重写热路径。Python 版约 300–500ms/张，
-   移动端要另做优化（降分辨率 + 只在未命中时跑）。
+1. ~~**Android 侧接入**（未做）~~ **已于 2026-10-06 完成**：
+   - `android/app/src/main/java/com/qrsuite/scanner/StylizedDetector.java`（621 行）——
+     从本模块**逐字移植**，零 Android 依赖（只用 `java.*`），因此可在桌面 JVM 上离线回归。
+   - 移植验证：`tools/android-parity/StylizedParityTest.java` 与 Python 参考逐张比对，
+     **桌面 JVM 16/16 一致**（判定/置信度/定位点数/圆心，圆心容差 0.05px）。
+   - 真机验证：`android/app/src/androidTest/.../StylizedDeviceTest.java` 在 Pixel 5a 上跑，
+     **2 个测试全过**（一致性 + 耗时预算）。
+   - 接入点：`MainActivity.detectStylizedThenHint(uri)` —— 仅在 ML Kit 未命中时于后台线程跑，
+     按结果提示"请用抖音/微信扫一扫"。未识别出已知厂商时退回原来的通用措辞。
+   - R8：`proguard-rules.pro` 显式 keep `StylizedDetector`（正确性依赖与 Python 一致的浮点顺序，
+     已确认发布包中类名与 angularDiv/bullseyeVerify 等方法名完整保留）。
+   - **移植坑（务必知道）**：
+     a. `javax.imageio` / `java.awt` 在 Android **不存在** —— 桌面验证台不能放进 `src/main`，
+        否则 App 编不过（我是被这个坑了一次才挪到 `tools/android-parity/`）。
+     b. Android `Bitmap` **没有** `getRGB(0,0,w,h,...)` 批量接口（那是桌面 BufferedImage 的），
+        对应方法是 `getPixels(px, 0, w, 0, 0, w, h)`。
+     c. `testInstrumentationRunner` 必须写在 `defaultConfig {}` **内部**，
+        放在 `android {}` 下会报 "Could not find method testInstrumentationRunner()"。
+     d. 真机上把长边缩到 1600 再判定（原图直接跑虽更准但更慢；1600 在实测样本上结果不变）。
 2. **提升判定精度**：目前靠手调阈值。若要更稳，需要**更多标注样本**（每类 10–20 张，
    覆盖不同背景/角度/尺寸），然后用手工特征（环宽序列、定位点数量与半径分布、角向分度、
    盘心一致性）训一个轻量分类器，并给出混淆矩阵。

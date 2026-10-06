@@ -25,4 +25,9 @@
     <string name="detecting">Scanning…</string>
     <string name="secondary_actions">More actions</string>
     <string name="stylized_code_hint">No barcode found. If this is a Douyin profile code or a WeChat reward code, its dotted/ring modules are a proprietary format that general-purpose decoders cannot read — please scan it with the matching app.</string>
+    <!-- Structure detection result (on-device geometric classification, not cloud). -->
+    <string name="stylized_douyin">This is a Douyin profile code (proprietary format, contents cannot be decoded offline). Please scan it with the Douyin app.</string>
+    <string name="stylized_wechat_mp">This is a WeChat Mini Program code (proprietary format, contents cannot be decoded offline). Please scan it with WeChat.</string>
+    <string name="stylized_wechat_reward">This is a WeChat reward code (proprietary format involving payments; contents cannot be decoded offline). Please scan it with WeChat.</string>
+    <string name="stylized_unknown">No barcode found, and it does not match a known stylized code. Try a sharper original photo.</string>
 </resources>

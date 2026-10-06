@@ -30,6 +30,30 @@
 - **清理死标签 `wechat_radial`**：`KIND_LABELS`/`HINTS` 声明了它但代码从不返回，
   属契约不一致，已移除。
 
+### 新增 Added（Android 端接入）
+- **把厂商判定移植到 Android**：`android/.../StylizedDetector.java`（621 行），
+  从 `qrsuite/stylized.py` **逐字移植**，零 Android 依赖（只用 `java.*`），
+  因此可以在桌面 JVM 上离线做一致性回归。
+  接入点 `MainActivity.detectStylizedThenHint()`：仅在 ML Kit 未命中时于后台线程运行，
+  按结果给出「这是抖音主页码，请用抖音扫一扫」这类可执行提示；
+  未识别出已知厂商时退回原来的通用措辞。
+- **两层一致性验证**：
+  - 桌面 JVM：`tools/android-parity/StylizedParityTest.java` 与 Python 参考逐张比对，
+    **16/16 一致**（判定、置信度 ±0.02、定位点数、圆心 ±0.05px）。
+  - 真机（Pixel 5a）：`androidTest` 的 `StylizedDeviceTest` 跑 2 个测试全过
+    （一致性 + 耗时预算）。
+- `proguard-rules.pro` 显式 keep `StylizedDetector`：其正确性依赖与 Python 参考
+  一致的浮点顺序，避免 R8 激进重排后出现难以定位的精度漂移。
+- Android 版本 `2.0.4` → `2.1.1`（versionCode 2 → 3），与 Python / 网页端对齐。
+
+### 移植坑（写给后来者）
+- `javax.imageio` / `java.awt` 在 Android **不存在**：桌面验证台必须放在 `src/main` 之外，
+  否则 App 编不过。
+- Android `Bitmap` 没有 `getRGB(0,0,w,h,...)` 批量接口（那是桌面 `BufferedImage` 的），
+  对应方法是 `getPixels(px, 0, w, 0, 0, w, h)`。
+- `testInstrumentationRunner` 必须写在 `defaultConfig {}` **内部**。
+- 真机判定前把长边缩到 1600：原图直接跑更慢，1600 在实测样本上结果不变。
+
 ### 性能 Performance
 - **判定耗时 ~3× 降低**（16 张 2089ms → 658ms）：瓶颈在 `_bullseye_verify`
   （占判定 ~90%，稠密搜索里被调用 4000+ 次）。加保守预筛——真牛眼中心必为黑，

@@ -63,14 +63,17 @@ android {
         applicationId 'com.qrsuite.scanner'
         minSdk 26
         targetSdk 35
-        versionCode 2
-        versionName '2.0.4'
+        versionCode 3
+        versionName '2.1.1'
         resourceConfigurations += ['zh', 'en']
 
         // 只打 64 位 ARM（现代安卓机）；x86/armeabi 仅为模拟器与老设备所需，去掉可省近半体积
         ndk {
             abiFilters 'arm64-v8a'
         }
+
+        // 设备端一致性测试用（只在 connectedAndroidTest 时生效，不进正式包）
+        testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
     }
 
     // 只保留需要的 ABI/资源，APK 更小
@@ -118,4 +121,8 @@ dependencies {
 
     // 条码识别：bundled 版模型打进 APK，完全离线可用
     implementation 'com.google.mlkit:barcode-scanning:17.3.0'
+
+    // 结构判定的设备端回归（验证移植版在真实 Android 运行时与 Python 参考一致）
+    androidTestImplementation 'androidx.test.ext:junit:1.2.1'
+    androidTestImplementation 'androidx.test:runner:1.6.2'
 }

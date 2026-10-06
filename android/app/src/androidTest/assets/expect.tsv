@@ -1,0 +1,5 @@
+# 文件名	kind	confidence	nEyes	centerX	centerY
+real_douyin.jpg	douyin_profile	0.875	4	632.0	680.8
+real_wechat_reward.jpg	wechat_reward	1.000	3	575.8	419.8
+f_qr.png	unknown	0.000	0	-999	-999
+real_charger_lcd.jpg	unknown	0.000	0	-999	-999
