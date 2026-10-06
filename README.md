@@ -14,6 +14,9 @@
 [![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
 [![Android](https://img.shields.io/badge/Android-arm64-brightgreen)](android/)
 
+**🟢 在线试用（无需安装）：<https://ibsibxi.github.io/qrsuite/>**
+纯前端版本，图片不出浏览器；也可把 `docs/` 部署到你自己的静态托管。
+
 ---
 
 ## ✨ 特性
