@@ -57,6 +57,10 @@ button:hover{background:#2b3c5e;border-color:var(--acc)}
 .hname{color:var(--mut);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .hval{font-family:Consolas,monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer;color:#cfe9dc}
 footer{color:#66748e;font-size:12.5px;text-align:center;padding:0 20px 40px}
+/* 链接统一用品牌色：此前没有 a 规则，浏览器默认链接蓝在深色底上既不协调也不够清晰 */
+footer a{color:var(--acc);text-decoration:none}
+footer a:hover{text-decoration:underline}
+main a{color:var(--acc)}
 @media (max-width:620px){
   .card{grid-template-columns:64px 1fr}
   .thumb{width:64px;height:64px}

@@ -29,7 +29,9 @@
 </header>
 
 <main>
-  <div id="env" class="env" data-i18n="env.init">正在初始化…</div>
+  <!-- 注意：不要给 #env 加 data-i18n！它的内容由 app.js 的 refreshEnv() 动态写入，
+       若挂上 data-i18n，i18n.apply() 会在 DOMContentLoaded 时把它覆盖回静态文案。 -->
+  <div id="env" class="env">正在初始化…</div>
 
   <section id="drop" tabindex="0">
     <div class="big">🖼️</div>
